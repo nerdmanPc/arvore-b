@@ -1,10 +1,11 @@
 from struct import Struct
 from typing import Optional, Tuple
 from enum import Enum
-import sys, node, data_base
+#from node import Entry, Node
+import sys
 
 FILE_PATH = "tree.bin"
-GRAUMINIMO = 2
+#GRAUMINIMO = 2 #Dá problema de import circular. Movido para 'node.py'
 
 class OpStatus(Enum): 
 	OK = 0 
