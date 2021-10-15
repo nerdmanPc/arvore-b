@@ -32,27 +32,28 @@ class Entry:
 
 class Node:
 
-    header_format = Struct('> ? I') #is_leaf: bool, entry_count: uint32
-    child_ptr_format = Struct('> I')
-    entry_format = Entry.format
     max_degree = 2*GRAUMINIMO
+    header_format = Struct('> ? I') #is_leaf: bool, entry_count: uint32
+    child_id_format = Struct('> I')
+    entry_format = Entry.format
     header_size = header_format.size
-    child_ptr_size = child_ptr_format.size
+    child_id_size = child_id_format.size
     entry_size = entry_format.size
 
-    def __init__(self) -> None:
-        self.is_leaf = True
-        self.entries = []
-        self.children = []
-
-    def __init__(self, is_leaf: bool, entries: List[Entry], children: List[int]) -> None:
+    def __init__(self, is_leaf: bool, entries: List[Entry], children_ids: List[int]) -> None:
         self.is_leaf = is_leaf
         self.entries = entries
-        self.children =children
+        self.children_ids = children_ids
 
     @classmethod
     def new_empty(cls):
-        return cls(is_leaf=True, entries=[], children=[])
+        return cls(True, [], [])
+
+    def split_by_key(self, key: int): #-> Node 
+        print('TODO: Node.slpit_by_key()')
+
+    def split_when_full(self): #-> Tuple[Entry, Node]:
+        print('TODO: node.split_when_full')
     
     @classmethod
     def from_bytes(cls, data: bytes): #-> Node:
@@ -71,8 +72,8 @@ class Node:
         children = []
         for index in range(entry_count + 1):
             ptr = cls.child_offset(index)
-            child_data = data[ ptr : ptr + cls.child_ptr_size ]
-            child = cls.child_ptr_format.unpack(child_data)
+            child_data = data[ ptr : ptr + cls.child_id_size ]
+            child = cls.child_id_format.unpack(child_data)
             children.append(child)
 
         return Node(is_leaf, entries, children)
@@ -89,52 +90,61 @@ class Node:
         if self.is_leaf:
             return bytes(data)
 
-        for index, child in enumerate(self.children):
+        for index, child in enumerate(self.children_ids):
             ptr = self.child_offset(index)
-            child_data = self.child_ptr_format.pack(child)
-            data[ ptr : ptr + self.child_ptr_size ] = child_data
+            child_data = self.child_id_format.pack(child)
+            data[ ptr : ptr + self.child_id_size ] = child_data
 
         return bytes(data)
 
-    def insert_entry(self, entry: Entry) -> None:
-        pass
+    #Insere registro 'to_insert', aloca espaço para um novo ID de filho e retorna o ID do filho a ser dividido 
+    def insert_entry(self, to_insert: Entry) -> Optional[int]: # Registro|Ponteiro|Registro -> Registro|Ponteiro|NovoRegistro|NovoPonteiro|Registro
+        #                                                       index=j-1| index=j            index=i-1|        index=i      |     index=i+1
+        child_to_split = None
+        if self.is_full():
+            return child_to_split
+        for index, current in enumerate(self.entries):
+            if current.key_greater_than(to_insert.key()):
+                self.entries.insert(index, to_insert) #insere 'to_insert' antes de 'current'
+                child_to_split = 
+                break
+        
+        return child_to_split
 
-    def split(self): #-> Tuple[Node, Entry, Node]:
-        pass
-
-    def full(self) -> bool:
-        return len(self.entries) >= self.max_degree
+    def is_full(self) -> bool:
+        return len(self.entries) >= self.max_degree-1
         
     @classmethod
     def size(cls) -> int:
         return cls.header_size + \
-            cls.child_ptr_size * cls.max_degree + \
+            cls.child_id_size * cls.max_degree + \
             cls.entry_size * (cls.max_degree - 1)
     #Retorna Entry se a chave está no nó, int se está num nó filho e None se 
     # chave não está no nó e este é folha. Busca apenas dentor do próprio nó.
     def search_by_key(key: int) -> Optional[Union[Entry, int]]: 
-        pass
+        print('TODO: Node.search_by_key()')
 
     @classmethod
     def entry_offset(cls, index: int) -> Optional[Entry]: #PRIVADO
-        start = cls.header_size + cls.child_ptr_size #Pula o cabeçalho e o primeiro filho
-        step = cls.entry_size + cls.child_ptr_size #Avança para o próximo registro pulando o filho entre eles
+        start = cls.header_size + cls.child_id_size #Pula o cabeçalho e o primeiro filho
+        step = cls.entry_size + cls.child_id_size #Avança para o próximo registro pulando o filho entre eles
         return start + index*step
 
     @classmethod
     def child_offset(cls, index: int) -> Optional[int]: #PRIVADO
         start = cls.header_size #Pula o cabeçalho
-        step = cls.child_ptr_size + cls.entry_size #Avança para o próximo filho pulando o registro entre eles
+        step = cls.child_id_size + cls.entry_size #Avança para o próximo filho pulando o registro entre eles
         return start + step * index 
 
     def __str__(self) -> str: 
-        pass
+        return 'TODO: Node.__str__()'
 
 file_path = 'teste.bin'
 node = None
 try:
     with open(file_path, 'xb') as file:
         node = Node.new_empty()
+        print(f'Empty node: [{node.into_bytes()}]')
         file.write(node.into_bytes())
 except FileExistsError:
     with open(file_path, "rb") as file:

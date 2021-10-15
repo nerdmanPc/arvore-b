@@ -1,7 +1,7 @@
 from struct import Struct
 from typing import Optional, Tuple
 from enum import Enum
-import sys
+import sys, node, data_base
 
 FILE_PATH = "tree.bin"
 GRAUMINIMO = 2
