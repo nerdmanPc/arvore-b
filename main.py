@@ -49,25 +49,25 @@ def exit_shell():
 	sys.exit()
 
 #Loop principal que processa os comandos.
-entry = input()
-while entry != 'e':
-    if(entry == 'i'):
-        num_reg = input()
-        name_reg = input()
-        age_reg = input()
-        insert_entry(int(num_reg), name_reg, int(age_reg))
-    elif(entry == 'c'):
-        num_reg = input()
-        query_entry(int(num_reg))
-    #elif(entry == 'r'):
-    #    num_reg = input()
-    #    remove_entry(int(num_reg))
-    elif(entry == 'p'):
-        print_tree()
-    elif(entry == 'o'):
-        print_sequence()
-    elif(entry == 't'):
-        print_occupancy()
-    entry = input()
-exit_shell()
+#entry = input()
+#while entry != 'e':
+#    if(entry == 'i'):
+#        num_reg = input()
+#        name_reg = input()
+#        age_reg = input()
+#        insert_entry(int(num_reg), name_reg, int(age_reg))
+#    elif(entry == 'c'):
+#        num_reg = input()
+#        query_entry(int(num_reg))
+#    #elif(entry == 'r'):
+#    #    num_reg = input()
+#    #    remove_entry(int(num_reg))
+#    elif(entry == 'p'):
+#        print_tree()
+#    elif(entry == 'o'):
+#        print_sequence()
+#    elif(entry == 't'):
+#        print_occupancy()
+#    entry = input()
+#exit_shell()
 #Fim do loop principal.
