@@ -162,6 +162,9 @@ class Node:
         step = cls.child_id_size + cls.entry_size #Avança para o próximo filho pulando o registro entre eles
         return start + step * index 
 
+    def __iter__(self):
+        return iter(self.entries)
+
     def __str__(self) -> str: 
         items_str = []
         for index, entry in enumerate(self.entries):
