@@ -81,7 +81,7 @@ class Node:
         right_entries = self._entries[split_index:]
         right_children = self._children_ids[split_index:]
         # Os ponteiros à esquerda e direita de 'middle_entry' podem ser obtidos por quem chama
-        middle_entry = self._entries[split_index]
+        middle_entry = self._entries[split_index-1]
         self._entries = self._entries[:split_index-1]
         self._children_ids = self._children_ids[:split_index]
         new_node = Node(self._is_leaf, right_entries, right_children)
@@ -218,17 +218,29 @@ class Node:
     def __iter__(self):
         return iter(self._entries)
 
-    def __str__(self) -> str: 
+    #def __str__(self) -> str:      #VERDADEIRA
+    #    items_str = []
+    #    for index, entry in enumerate(self._entries):
+    #        if index < len(self._children_ids):
+    #            child = self._children_ids[index] 
+    #            items_str.append(str(child))
+    #        items_str.append(str(entry))
+    #    if not self._is_leaf:
+    #        child = self._children_ids[-1] 
+    #        items_str.append(str(child))
+    #    return ' | '.join(items_str)
+
+    def __str__(self) -> str:     # TESTE
         items_str = []
         for index, entry in enumerate(self._entries):
             if index < len(self._children_ids):
                 child = self._children_ids[index] 
-                items_str.append(str(child))
-            items_str.append(str(entry))
+                items_str.append('c'+str(child))
+            items_str.append('k'+str(entry.key()))
         if not self._is_leaf:
             child = self._children_ids[-1] 
-            items_str.append(str(child))
-        return ' | '.join(items_str)
+            items_str.append('c'+str(child))
+        return '[' + ' | '.join(items_str) + ']'
 
 #TESTE
 
@@ -244,32 +256,47 @@ entries = [
 
 nodes = [Node.new_empty()]
 root_index = 0
-root: Entry = nodes[root_index]
 
-def append_node(nodes, node: Node) -> int:
+def append_node(node: Node) -> int:
     new_index = len(nodes)
     nodes.append(node)
     return new_index 
 
-for entry in entries:
-    # parent, current
-    if root.is_full():
-        (extracted_entry, new_node) = root.split_when_full()
-        new_index = append_node(nodes, new_node)
-        new_root = Node.new_root(extracted_entry, root_index, new_index)
-        root_index = append_node(nodes, new_root)
-        root = nodes[root_index]
-    if root.is_leaf():
-        root.insert_in_leaf(entry)
-    else:
-        index_to_split = root.insert_in_parent(entry)
-        new_node = nodes[index_to_split].split_by_key(entry.key())
-        new_index = len(nodes)
-        nodes.append(new_node)
-        root.insert_child(new_index)
-print(f'Root: {root_index}')
-for i, node in enumerate(nodes): 
-    print(f'Node[{i}]: {node}')
+def print_nodes():
+    print(f'Root: {root_index}')
+    for i, node in enumerate(nodes): 
+        print(f'Node[{i}]: {node}')
+
+nodes[root_index].insert_in_leaf(entries[0])
+nodes[root_index].insert_in_leaf(entries[1])
+nodes[root_index].insert_in_leaf(entries[2])
+print_nodes()
+(entry, new_node) = nodes[root_index].split_when_full()
+new_index = append_node(new_node)
+new_root = Node.new_root(entry, root_index, new_index)
+root_index = append_node(new_root)
+print_nodes()
+
+#for entry in entries:
+#    # parent, current
+#    if root.is_full():
+#        (extracted_entry, new_node) = root.split_when_full()
+#        new_index = append_node(nodes, new_node)
+#        new_root = Node.new_root(extracted_entry, root_index, new_index)
+#        root_index = append_node(nodes, new_root)
+#        root = nodes[root_index]
+#    if root.is_leaf():
+#        root.insert_in_leaf(entry)
+#    else:
+#        index_to_split = root.insert_in_parent(entry)
+#        new_node = nodes[index_to_split].split_by_key(entry.key())
+#        new_index = len(nodes)
+#        nodes.append(new_node)
+#        root.insert_child(new_index)
+
+#print(f'Root: {root_index}')
+#for i, node in enumerate(nodes): 
+#    print(f'Node[{i}]: {node}')
 
 
 #print(nodes[0])
