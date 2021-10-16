@@ -165,7 +165,6 @@ class Node:
         if nodes[key]._is_leaf is not True:
             if nodes[key].
 
-
     def is_full(self) -> bool:
         return len(self._entries) >= self.max_degree-1
 
