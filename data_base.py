@@ -57,7 +57,7 @@ class DataBase:
     # CERTO
     @classmethod
     def header_size(cls) -> int:
-        return cls.header_format.size
+        return cls.header_format.size()
 
     # CERTO - Note que antes, retornava um ponteiro pra registro, agora retorna um ponteiro pra nó
     @classmethod
