@@ -115,9 +115,9 @@ class Node:
 
     #Insere registro 'to_insert', aloca espaço para um novo ID de filho 
     # e retorna o ID do filho a ser dividido. 
+    #  |Registro|Ponteiro|Registro| -> |Registro|Ponteiro|NovoRegistro|NovoPonteiro|Registro|
+    #  |index-1 |     index       | -> |index-1 |        index        |      index+1        |
     def insert_in_parent(self, to_insert: Entry) -> Optional[int]: 
-        #  |Registro|Ponteiro|Registro| -> |Registro|Ponteiro|NovoRegistro|NovoPonteiro|Registro|
-        #  |index-1 |     index       | -> |index-1 |        index        |      index+1        |
         if self._is_leaf() or self.is_full():
             return None
         for index, current in enumerate(self._entries):
@@ -144,7 +144,10 @@ class Node:
     # Insere 'child_id' no lugar do primeiro ponteiro inválida (-1).
     # Deve ser chamada depois de insert_in_parent() com o ID  do novo nó.
     def insert_child(self, child_id: int) -> None:
-        print('TODO: node.insert_child()')
+        for child in self._children_ids:
+            if child == -1:
+                child = child_id
+                return
             
     #Retorna Entry se a chave está no nó, int se está num nó filho e None se 
     # chave não está no nó e este nó é folha. Busca apenas dentro do próprio nó.
