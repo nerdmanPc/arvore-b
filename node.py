@@ -111,7 +111,6 @@ class Node:
             ptr = self._child_offset(index)
             child_data = self.child_id_format.pack(child)
             data[ ptr : ptr + self.child_id_size ] = child_data
-
         return bytes(data)
 
     #Insere registro 'to_insert', aloca espaço para um novo ID de filho 
@@ -123,7 +122,14 @@ class Node:
             return None
         for index, current in enumerate(self._entries):
             if current.key_greater_than(to_insert.key()):
-                self.entriesert_in_leaf(entry_b)
+                self._entries.insert(index, to_insert) # insere 'to_insert' antes de 'current'
+                self._children_ids.insert(index + 1, -1) # insere índice inválido (-1) no espaço que receberá o próximo nó
+                return self._children_ids[index] # retorna anterior ao inválido, que será dividido
+        self._entries.append(to_insert)  # Se nenhum registro tem a chave maior, insere no final
+        self._children_ids.append(-1) # insere índice inválido (-1) no espaço que receberá o próximo nó (último filho)
+        return self._children_ids[-2] # retorna anterior ao inválido, que será dividido
+
+    
     #Insere registr 'to_insert' e retorna se houve sucesso
     def insert_in_leaf(self, to_insert: Entry) -> bool:
         if (not self._is_leaf) or self.is_full():
@@ -132,7 +138,7 @@ class Node:
             if current.key_greater_than(to_insert.key()):
                 self._entries.insert(index, to_insert) #insere 'to_insert' antes de 'current'
                 return True
-        self._entries.append(to_insert) # Se nenhum registro tem a chave mair, insere no final
+        self._entries.append(to_insert) # Se nenhum registro tem a chave maior, insere no final
         return True
 
     # Insere 'child_id' no lugar do primeiro ponteiro inválida (-1).
@@ -204,7 +210,7 @@ def append_node(nodes, node: Node) -> int:
     return new_index 
 
 for entry in entries:
-    parent, current
+    # parent, current
     if root.is_full():
         (extracted_entry, new_node) = root.split_when_full()
         new_index = append_node(nodes, new_node)
