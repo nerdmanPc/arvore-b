@@ -1,6 +1,7 @@
 from struct import Struct
 from typing import Optional, Tuple, Union, List
 from enum import Enum
+from math import floor
 #from main import GRAUMINIMO
 
 GRAUMINIMO = 2
@@ -75,7 +76,12 @@ class Node:
     # Deve ser chamada ao visitar o nó e ele estar cheio.
     # Retorna a tupla (chave_removida, novo_no)
     def split_when_full(self): #-> Tuple[Entry, Node]:
+<<<<<<< HEAD
         split_index = (len(self._entries) + 1) / 2
+=======
+
+        split_index = floor((len(self._entries) + 1) / 2)
+>>>>>>> 2e0cea21e90f7b64d26406c9dd1fbf5ad8d6aca5
         right_entries = self._entries[split_index:]
         right_children = self._children_ids[split_index:]
         # Os ponteiros à esquerda e direita de 'middle_entry' podem ser obtidos por quem chama
@@ -131,7 +137,7 @@ class Node:
     #  |Registro|Ponteiro|Registro| -> |Registro|Ponteiro|NovoRegistro|NovoPonteiro|Registro|
     #  |index-1 |     index       | -> |index-1 |        index        |      index+1        |
     def insert_in_parent(self, to_insert: Entry) -> Optional[int]: 
-        if self._is_leaf() or self.is_full():
+        if self._is_leaf or self.is_full():
             return None
         for index, current in enumerate(self._entries):
             if current.key_greater_than(to_insert.key()):
@@ -185,6 +191,9 @@ class Node:
             cls.child_id_size * cls.max_degree + \
             cls.entry_size * (cls.max_degree - 1)
 
+    def occupancy(self) -> float:
+        return len(self._entries) / (self.max_degree-1)
+
     # Retorna ínice do primeiro registro com chave maior que 'key'
     def _index_to_split(self, key: int) -> int:
         for i, entry in enumerate(entries):
@@ -222,11 +231,13 @@ class Node:
 #TESTE
 
 entries = [
-    Entry(0, 'Roberto Carlos', 255),
     Entry(1, 'Aunt May', 5),
+    Entry(6, 'Rainha Elizabeth', 255),
+    Entry(3, 'Keanu Reeves', 196),
+    Entry(4, 'Pedro Costa', 25),
     Entry(2, 'Abraham Weintraub', 12),
-    Entry(3, 'Keanu Reeves', 200),
-    Entry(4, 'Pedro Costa', 25)
+    Entry(0, 'Roberto Carlos', 128),
+    Entry(5, 'Kid Bengala', 64)
 ]
 
 nodes = [Node.new_empty()]
@@ -254,8 +265,9 @@ for entry in entries:
         new_index = len(nodes)
         nodes.append(new_node)
         root.insert_child(new_index)
-    for i, node in enumerate(nodes): 
-        print(f'Node[{i}]: {node}')
+print(f'Root: {root_index}')
+for i, node in enumerate(nodes): 
+    print(f'Node[{i}]: {node}')
 
 
 #print(nodes[0])
