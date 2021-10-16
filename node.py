@@ -75,12 +75,21 @@ class Node:
     # Deve ser chamada ao visitar o nó e ele estar cheio.
     # Retorna a tupla (chave_removida, novo_no)
     def split_when_full(self): #-> Tuple[Entry, Node]:
-        print('TODO: node.split_when_full')
+
+        split_index = (len(self._entries) + 1) / 2
+        right_entries = self._entries[split_index:]
+        right_children = self._children_ids[split_index:]
+        # Os ponteiros à esquerda e direita de 'middle_entry' podem ser obtidos por quem chama
+        middle_entry = self._entries[split_index]
+        self._entries = self._entries[:split_index-1]
+        self._children_ids = self._children_ids[:split_index]
+        new_node = Node(self._is_leaf, right_entries, right_children)
+        return (middle_entry, new_node)
     
     @classmethod
     def from_bytes(cls, data: bytes): #-> Node:
-        (is_leaf, entry_count) = cls.header_format.unpack(data[:cls.header_size])
 
+        (is_leaf, entry_count) = cls.header_format.unpack(data[:cls.header_size])
         entries = []
         for index in range(entry_count):
             ptr = cls._entry_offset(index)
