@@ -1,0 +1,15 @@
+insercao com sucesso: 10
+insercao com sucesso: 15
+insercao com sucesso: 20
+insercao com sucesso: 30
+chave: 20
+paulo
+20
+No: 1: apontador: 2 chave: 15 apontador: 3
+No: 2: apontador: null chave: 10 apontador: null
+No: 3: apontador: null chave: 20 apontador: null chave: 30 apontador: null
+10
+15
+20
+30
+taxa de ocupacao: 0.4

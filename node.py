@@ -75,7 +75,6 @@ class Node:
     # Deve ser chamada ao visitar o nó e ele estar cheio.
     # Retorna a tupla (chave_removida, novo_no)
     def split_when_full(self): #-> Tuple[Entry, Node]:
-
         split_index = (len(self._entries) + 1) / 2
         right_entries = self._entries[split_index:]
         right_children = self._children_ids[split_index:]
