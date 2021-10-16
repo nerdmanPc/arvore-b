@@ -65,7 +65,12 @@ class Node:
     # no nó retornado por esta. 
     # sendo 'key' a chave recém inserida. Retorna o novo nó.
     def split_by_key(self, key: int): #-> Node 
-        print('TODO: Node.slpit_by_key()')
+        split_index = self._index_to_split(key)
+        right_entries = self._entries[split_index:]
+        right_children = self._children_ids[split_index:]
+        self._entries = self._entries[:split_index]
+        self._children_ids = self._children_ids[:split_index+1]
+        return Node(self._is_leaf, right_entries, right_children)
 
     # Deve ser chamada ao visitar o nó e ele estar cheio.
     # Retorna a tupla (chave_removida, novo_no)
@@ -127,7 +132,7 @@ class Node:
                 return self._children_ids[index] # retorna anterior ao inválido, que será dividido
         self._entries.append(to_insert)  # Se nenhum registro tem a chave maior, insere no final
         self._children_ids.append(-1) # insere índice inválido (-1) no espaço que receberá o próximo nó (último filho)
-        return self._children_ids[-2] # retorna anterior ao inválido, que será dividido
+        return self._children_ids[-2] # retorna anterior ao inválido (penúltimo filho), que será dividido
 
     
     #Insere registr 'to_insert' e retorna se houve sucesso
@@ -172,6 +177,13 @@ class Node:
         return cls.header_size + \
             cls.child_id_size * cls.max_degree + \
             cls.entry_size * (cls.max_degree - 1)
+
+    # Retorna ínice do primeiro registro com chave maior que 'key'
+    def _index_to_split(self, key: int) -> int:
+        for i, entry in enumerate(entries):
+            if entry.key() > key:
+                return i
+        return len(entries)
 
     @classmethod
     def _entry_offset(cls, index: int) -> Optional[Entry]: #PRIVADO
