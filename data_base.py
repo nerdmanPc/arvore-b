@@ -75,7 +75,7 @@ class DataBase:
 
 	# TODO: Assim como outras funções, esta tem que mudar a semântica 
 	# para oprerar sobre NÓS em vez de REGISTROS
-	def node_by_index(self, index:int) -> Entry:
+	def node_by_index(self, index:int) -> Node:
 		print('TODO: DataBase.node_by_index()')
 		if index >= self.length: print(f'ÍNDICE INVÁLIDO: {index}')
 		with open(self.path, 'rb') as file:
@@ -83,6 +83,11 @@ class DataBase:
 			data = file.read(Entry.size())
 			entry = Entry.from_bytes(data)
 			return entry
+
+	# TODO: Escreve os bytes de um nó no final do arquivo e retona seu índice
+	# Responsável por alocar o nó.
+	def append_node(self, to_append: Node) -> int:
+		print('TODO: DataBase.append_node()')
 
 	# TODO; PERCORRER A ARVORE PRA ACHAR O NÓ DO REGISTRO
 	def add_entry(self, key:int, name:str, age:int) -> OpStatus:
