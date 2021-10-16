@@ -150,10 +150,22 @@ class Node:
                 child = child_id
                 return
             
-    #Retorna Entry se a chave está no nó, int se está num nó filho e None se 
+    # Retorna Entry se a chave está no nó, int se está num nó filho e None se
     # chave não está no nó e este nó é folha. Busca apenas dentro do próprio nó.
+    # int é o filho onde a chave deve estar (subarvore)
     def search_by_key(self, key: int) -> Union[Entry, int, None]: 
-        print('TODO: Node.search_by_key()')
+        #print('TODO: Node.search_by_key()')
+        for child in self._children_ids:
+            if self._is_leaf is not True:
+                if child == key:
+                    #print('Retorna a entrada do nó')
+                    return child.from_bytes(key)
+                else:
+                    # TODO pegar o valor do ponteiro imediatamente anterior ao próximo nó
+                    #print('Retorna o meio dos registros')
+                    pass
+            else:
+                return None
 
     def is_full(self) -> bool:
         return len(self._entries) >= self.max_degree-1
