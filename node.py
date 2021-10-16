@@ -57,9 +57,14 @@ class Node:
     def new_empty(cls):
         return cls(True, [], [])
 
+    # Deve ser chamada logo após 'insert_in_parent()', 
+    # no nó retornado por esta. 
+    # sendo 'key' a chave recém inserida. Retorna o novo nó.
     def split_by_key(self, key: int): #-> Node 
         print('TODO: Node.slpit_by_key()')
 
+    # Deve ser chamada ao visitar o nó e ele estar cheio.
+    # Retorna a tupla (chave_removida, novo_no)
     def split_when_full(self): #-> Tuple[Entry, Node]:
         print('TODO: node.split_when_full')
     
@@ -69,7 +74,7 @@ class Node:
 
         entries = []
         for index in range(entry_count):
-            ptr = cls.entry_offset(index)
+            ptr = cls._entry_offset(index)
             entry_data = data[ ptr : ptr + cls.entry_size ]
             entry = Entry.from_bytes(entry_data)
             entries.append(entry)
@@ -79,7 +84,7 @@ class Node:
 
         children = []
         for index in range(entry_count + 1):
-            ptr = cls.child_offset(index)
+            ptr = cls._child_offset(index)
             child_data = data[ ptr : ptr + cls.child_id_size ]
             child = cls.child_id_format.unpack(child_data)
             children.append(child)
@@ -91,7 +96,7 @@ class Node:
         data[:self.header_size] = self.header_format.pack(self.is_leaf, len(self.entries))
 
         for index, entry in enumerate(self.entries):
-            ptr = self.entry_offset(index)
+            ptr = self._entry_offset(index)
             entry_data = entry.into_bytes()
             data[ ptr : ptr + self.entry_size ] = entry_data
 
@@ -99,13 +104,14 @@ class Node:
             return bytes(data)
 
         for index, child in enumerate(self.children_ids):
-            ptr = self.child_offset(index)
+            ptr = self._child_offset(index)
             child_data = self.child_id_format.pack(child)
             data[ ptr : ptr + self.child_id_size ] = child_data
 
         return bytes(data)
 
-    #Insere registro 'to_insert', aloca espaço para um novo ID de filho e retorna o ID do filho a ser dividido 
+    #Insere registro 'to_insert', aloca espaço para um novo ID de filho 
+    # e retorna o ID do filho a ser dividido. 
     def insert_in_parent(self, to_insert: Entry) -> Optional[int]: 
         #  |Registro|Ponteiro|Registro| -> |Registro|Ponteiro|NovoRegistro|NovoPonteiro|Registro|
         #  |index-1 |     index       | -> |index-1 |        index        |      index+1        |
@@ -125,6 +131,15 @@ class Node:
         self.entries.append(to_insert) # Se nenhum registro tem a chave mair, insere no final
         return True
 
+    # Insere 'child_id' no lugar do primeiro ponteiro inválida (-1).
+    # Deve ser chamada depois de insert_in_parent() com o ID  do novo nó.
+    def insert_child(self, child_id: int) -> None:
+        print('TODO: node.insert_child()')
+            
+    #Retorna Entry se a chave está no nó, int se está num nó filho e None se 
+    # chave não está no nó e este nó é folha. Busca apenas dentro do próprio nó.
+    def search_by_key(self, key: int) -> Union[Entry, int, None]: 
+        print('TODO: Node.search_by_key()')
 
     def is_full(self) -> bool:
         return len(self.entries) >= self.max_degree-1
@@ -134,19 +149,15 @@ class Node:
         return cls.header_size + \
             cls.child_id_size * cls.max_degree + \
             cls.entry_size * (cls.max_degree - 1)
-    #Retorna Entry se a chave está no nó, int se está num nó filho e None se 
-    # chave não está no nó e este é folha. Busca apenas dentor do próprio nó.
-    def search_by_key(key: int) -> Optional[Union[Entry, int]]: 
-        print('TODO: Node.search_by_key()')
 
     @classmethod
-    def entry_offset(cls, index: int) -> Optional[Entry]: #PRIVADO
+    def _entry_offset(cls, index: int) -> Optional[Entry]: #PRIVADO
         start = cls.header_size + cls.child_id_size #Pula o cabeçalho e o primeiro filho
         step = cls.entry_size + cls.child_id_size #Avança para o próximo registro pulando o filho entre eles
         return start + index*step
 
     @classmethod
-    def child_offset(cls, index: int) -> Optional[int]: #PRIVADO
+    def _child_offset(cls, index: int) -> Optional[int]: #PRIVADO
         start = cls.header_size #Pula o cabeçalho
         step = cls.child_id_size + cls.entry_size #Avança para o próximo filho pulando o registro entre eles
         return start + step * index 
@@ -161,15 +172,6 @@ class Node:
         if not self.is_leaf:
             child = self.children_ids[-1] 
             items_str.append(str(child))
-        
-        #for index, child in enumerate(self.children_ids):
-        #    items_str[index*2] = str(child)
-        #for index, entry in enumerate(self.entries):
-        #    items_str[index*2+1] = str(entry)
-        #for entry, child in entries_str, children_str:
-        #    items_str.append(entry)
-        #    items_str.append(child)
-        #print(items_str)
         return ' | '.join(items_str)
 
 #TESTE
