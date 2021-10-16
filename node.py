@@ -49,13 +49,17 @@ class Node:
     entry_size = entry_format.size
 
     def __init__(self, is_leaf: bool, entries: List[Entry], children_ids: List[int]) -> None:
-        self.is_leaf = is_leaf
-        self.entries = entries
-        self.children_ids = children_ids
+        self._is_leaf = is_leaf
+        self._entries = entries
+        self._children_ids = children_ids
 
     @classmethod
     def new_empty(cls):
         return cls(True, [], [])
+
+    @classmethod
+    def new_root(cls, entry: Entry, left, right):
+        return cls(False, [entry], [left, right])
 
     # Deve ser chamada logo após 'insert_in_parent()', 
     # no nó retornado por esta. 
@@ -93,17 +97,17 @@ class Node:
 
     def into_bytes(self) -> bytes:
         data = bytearray(self.size())
-        data[:self.header_size] = self.header_format.pack(self.is_leaf, len(self.entries))
+        data[:self.header_size] = self.header_format.pack(self._is_leaf, len(self._entries))
 
-        for index, entry in enumerate(self.entries):
+        for index, entry in enumerate(self._entries):
             ptr = self._entry_offset(index)
             entry_data = entry.into_bytes()
             data[ ptr : ptr + self.entry_size ] = entry_data
 
-        if self.is_leaf:
+        if self._is_leaf:
             return bytes(data)
 
-        for index, child in enumerate(self.children_ids):
+        for index, child in enumerate(self._children_ids):
             ptr = self._child_offset(index)
             child_data = self.child_id_format.pack(child)
             data[ ptr : ptr + self.child_id_size ] = child_data
@@ -115,20 +119,20 @@ class Node:
     def insert_in_parent(self, to_insert: Entry) -> Optional[int]: 
         #  |Registro|Ponteiro|Registro| -> |Registro|Ponteiro|NovoRegistro|NovoPonteiro|Registro|
         #  |index-1 |     index       | -> |index-1 |        index        |      index+1        |
-        if self.is_leaf() or self.is_full():
+        if self._is_leaf() or self.is_full():
             return None
-        for index, current in enumerate(self.entries):
+        for index, current in enumerate(self._entries):
             if current.key_greater_than(to_insert.key()):
                 self.entriesert_in_leaf(entry_b)
     #Insere registr 'to_insert' e retorna se houve sucesso
     def insert_in_leaf(self, to_insert: Entry) -> bool:
-        if (not self.is_leaf) or self.is_full():
+        if (not self._is_leaf) or self.is_full():
             return False
-        for index, current in enumerate(self.entries):
+        for index, current in enumerate(self._entries):
             if current.key_greater_than(to_insert.key()):
-                self.entries.insert(index, to_insert) #insere 'to_insert' antes de 'current'
+                self._entries.insert(index, to_insert) #insere 'to_insert' antes de 'current'
                 return True
-        self.entries.append(to_insert) # Se nenhum registro tem a chave mair, insere no final
+        self._entries.append(to_insert) # Se nenhum registro tem a chave mair, insere no final
         return True
 
     # Insere 'child_id' no lugar do primeiro ponteiro inválida (-1).
@@ -142,7 +146,10 @@ class Node:
         print('TODO: Node.search_by_key()')
 
     def is_full(self) -> bool:
-        return len(self.entries) >= self.max_degree-1
+        return len(self._entries) >= self.max_degree-1
+
+    def is_leaf(self) -> bool:
+        return self._is_leaf
         
     @classmethod
     def size(cls) -> int:
@@ -163,42 +170,63 @@ class Node:
         return start + step * index 
 
     def __iter__(self):
-        return iter(self.entries)
+        return iter(self._entries)
 
     def __str__(self) -> str: 
         items_str = []
-        for index, entry in enumerate(self.entries):
-            if index < len(self.children_ids):
-                child = self.children_ids[index] 
+        for index, entry in enumerate(self._entries):
+            if index < len(self._children_ids):
+                child = self._children_ids[index] 
                 items_str.append(str(child))
             items_str.append(str(entry))
-        if not self.is_leaf:
-            child = self.children_ids[-1] 
+        if not self._is_leaf:
+            child = self._children_ids[-1] 
             items_str.append(str(child))
         return ' | '.join(items_str)
 
 #TESTE
 
-node = Node.new_empty()
-node = node.into_bytes()
-node = Node.from_bytes(node)
+entries = [
+    Entry(0, 'Roberto Carlos', 255),
+    Entry(1, 'Aunt May', 5),
+    Entry(2, 'Abraham Weintraub', 12),
+    Entry(3, 'Keanu Reeves', 200),
+    Entry(4, 'Pedro Costa', 25)
+]
 
-entry_a = Entry(0, 'Roberto Carlos', 255)
-entry_b = Entry(1, 'Aunt May', 5)
-entry_c = Entry(2, 'Abraham Weintraub', 12)
-entry_d = Entry(3, 'Keanu Reeves', 200)
-entry_e = Entry(4, 'Pedro Costa', 25)
+nodes = [Node.new_empty()]
+root_index = 0
+root: Entry = nodes[root_index]
 
-print(node)
-node.insert_in_leaf(entry_a)
-node = node.into_bytes()
-node = Node.from_bytes(node)
-print(node)
-node.insert_in_leaf(entry_b)
-node = node.into_bytes()
-node = Node.from_bytes(node)
-print(node)
-node.insert_in_leaf(entry_c)
-node = node.into_bytes()
-node = Node.from_bytes(node)
-print(node)
+def append_node(nodes, node: Node) -> int:
+    new_index = len(nodes)
+    nodes.append(node)
+    return new_index 
+
+for entry in entries:
+    parent, current
+    if root.is_full():
+        (extracted_entry, new_node) = root.split_when_full()
+        new_index = append_node(nodes, new_node)
+        new_root = Node.new_root(extracted_entry, root_index, new_index)
+        root_index = append_node(nodes, new_root)
+        root = nodes[root_index]
+    if root.is_leaf():
+        root.insert_in_leaf(entry)
+    else:
+        index_to_split = root.insert_in_parent(entry)
+        new_node = nodes[index_to_split].split_by_key(entry.key())
+        new_index = len(nodes)
+        nodes.append(new_node)
+        root.insert_child(new_index)
+    for i, node in enumerate(nodes): 
+        print(f'Node[{i}]: {node}')
+
+
+#print(nodes[0])
+#nodes[0].insert_in_leaf(entries[0])
+#print(nodes[0])
+#nodes[0].insert_in_leaf(entries[1])
+#print(nodes[0])
+#nodes[0].insert_in_leaf(entries[2])
+#print(nodes[0])
