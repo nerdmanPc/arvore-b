@@ -73,19 +73,6 @@ class Node:
     #    self._children_ids = self._children_ids[:split_index+1]
     #    return Node(self._is_leaf, right_entries, right_children)
 
-    # Deve ser chamada ao visitar o nó e ele estar cheio.
-    # Retorna a tupla (chave_removida, novo_no)
-    def split_when_full(self): #-> Tuple[Entry, Node]:
-        split_index = floor((len(self._entries) + 1) / 2)
-        right_entries = self._entries[split_index:]
-        right_children = self._children_ids[split_index:]
-        # Os ponteiros à esquerda e direita de 'middle_entry' podem ser obtidos por quem chama
-        middle_entry = self._entries[split_index-1]
-        self._entries = self._entries[:split_index-1]
-        self._children_ids = self._children_ids[:split_index]
-        new_node = Node(self._is_leaf, right_entries, right_children)
-        return (middle_entry, new_node)
-    
     @classmethod
     def from_bytes(cls, data: bytes): #-> Node:
 
@@ -127,6 +114,20 @@ class Node:
             data[ ptr : ptr + self.child_id_size ] = child_data
         return bytes(data)
 
+    # Deve ser chamada ao visitar o nó e ele estar cheio.
+    # Retorna a tupla (chave_removida, novo_no)
+    def split_when_full(self): #-> Tuple[Entry, Node]:
+        split_index = floor((len(self._entries) + 1) / 2)
+        right_entries = self._entries[split_index:]
+        right_children = self._children_ids[split_index:]
+        # Os ponteiros à esquerda e direita de 'middle_entry' podem ser obtidos por quem chama
+        middle_entry = self._entries[split_index-1]
+
+        self._entries = self._entries[:split_index-1]
+        self._children_ids = self._children_ids[:split_index]
+        new_node = Node(self._is_leaf, right_entries, right_children)
+        return (middle_entry, new_node)
+    
     #Insere registro 'to_insert', aloca espaço para o novo ID de filho 
     # e retorna o ID do filho passado por parâmetro. Chamada após a quebra de um nó filho. 
     #  |Registro|Ponteiro|Registro| -> |Registro|Ponteiro|NovoRegistro|NovoPonteiro|Registro|
@@ -165,20 +166,18 @@ class Node:
             
     # Retorna Entry se a chave está no nó, int se está num nó filho e None se
     # chave não está no nó e este nó é folha. Busca apenas dentro do próprio nó.
-    # int é o filho onde a chave deve estar (subarvore)
+    # int é o ID do filho onde a chave deve estar (subarvore)
     def search_by_key(self, key: int) -> Union[Entry, int, None]: 
         #print('TODO: Node.search_by_key()')
+        #print(f'key = {key} self._is_leaf = {self._is_leaf}')
         for i, entry in enumerate(self._entries):     # Itera sobre os valores de entradas
-            if entry.key() == key:
+            if entry.key() == key:  # 'key' está na posição atual
                 return entry
-            elif entry.key() > key and not self._is_leaf:      
-                return i
-            else:
-                return None
-        # Trata o caso de 'key' ser maior que todas as chaves
-        if not self._is_leaf:
-            return len(self._children_ids)
-        else:
+            elif entry.key() > key and not self._is_leaf:   # 'key' está no nó à esquerde
+                return self._children_ids[i]
+        if not self._is_leaf: # 'key' está no último filho à direita
+            return self._children_ids[len(self._entries)]
+        else:                 # 'key'não está nesta subárvore
             return None
 
 
@@ -258,7 +257,7 @@ entries = [
 ]
 
 nodes = [Node.new_empty()]
-root_index = 0
+root = 0
 
 def append_node(node: Node) -> int:
     new_index = len(nodes)
@@ -266,86 +265,66 @@ def append_node(node: Node) -> int:
     return new_index 
 
 def print_nodes():
-    print(f'Root: {root_index}')
+    print(f'Root: {root}')
     for i, node in enumerate(nodes): 
         print(f'Node[{i}]: {node}')
 
 def search_node(key: int) -> Union[Node, Entry]:
-    node_index = root_index
-    search_result = nodes[node_index].search_by_key(key)
+    next_index = root
+    search_result = nodes[next_index].search_by_key(key)
     while not(search_result is None):
         if isinstance(search_result, int):
-            node_index = search_result
+            next_index = search_result
+            search_result = nodes[next_index].search_by_key(key)
         elif isinstance(search_result, Entry):
             return search_result
-    return node_index
+    return next_index
 
-nodes[root_index].insert_in_leaf(entries[0])
-nodes[root_index].insert_in_leaf(entries[1])
-nodes[root_index].insert_in_leaf(entries[2])
+def break_node(to_break: int, parent: int):
+    #index_to_break = 1 # Resultado da busca da chave 10
+    (entry, new_node) = nodes[to_break].split_when_full()
+    new_index = append_node(new_node)
+    if to_break == root: 
+        new_root = Node.new_root(entry, root, new_index)
+        root = append_node(new_root)
+    else:
+        nodes[parent].insert_in_parent(entry, new_index)
+
+nodes[root].insert_in_leaf(entries[0])
+nodes[root].insert_in_leaf(entries[1])
+nodes[root].insert_in_leaf(entries[2])
 print_nodes()
 
-(entry, new_node) = nodes[root_index].split_when_full()
+(entry, new_node) = nodes[root].split_when_full()
 new_index = append_node(new_node)
-new_root = Node.new_root(entry, root_index, new_index)
-root_index = append_node(new_root)
-
+new_root = Node.new_root(entry, root, new_index)
+root = append_node(new_root)
 print_nodes()
-index_to_insert = 1 # Resultado da busca da chave 4
+
+index_to_insert = search_node(entries[3].key()) # Resultado da busca da chave 4
 nodes[index_to_insert].insert_in_leaf(entries[3])
 print_nodes()
-index_to_insert = 0 # Resultado da busca da chave 2
+
+index_to_insert = search_node(entries[4].key()) # Resultado da busca da chave 2
 nodes[index_to_insert].insert_in_leaf(entries[4])
 print_nodes()
-index_to_insert = 0 # Resultado da busca da chave 0
+
+index_to_insert = search_node(entries[5].key()) # Resultado da busca da chave 0
 nodes[index_to_insert].insert_in_leaf(entries[5])
 print_nodes()
-index_to_insert = 1 # Resultado da busca da chave 5
+
+index_to_insert = search_node(entries[6].key()) # Resultado da busca da chave 5
 nodes[index_to_insert].insert_in_leaf(entries[6])
 print_nodes()
-index_to_break = 1 # Resultado da busca da chave 10
 
+index_to_break = 1 
 (entry, new_node) = nodes[index_to_break].split_when_full()
 new_index = append_node(new_node)
-nodes[root_index].insert_in_parent(entry, new_index)
-
+nodes[root].insert_in_parent(entry, new_index)
 print_nodes()
-index_to_insert = 3# Resultado da busca da chave 10
+
+index_to_insert = search_node(entries[7].key())# Resultado da busca da chave 10
 nodes[index_to_insert].insert_in_leaf(entries[7])
 print_nodes()
-#print_nodes()
-#index_to_insert = 1 # Resultado da busca da chave 666
 
-#nodes[root_index].insert_child(new_index)
-
-#nodes[index_to_insert].insert_in_leaf(entries[8])
-#print_nodes()
-#for entry in entries:
-#    # parent, current
-#    if root.is_full():
-#        (extracted_entry, new_node) = root.split_when_full()
-#        new_index = append_node(nodes, new_node)
-#        new_root = Node.new_root(extracted_entry, root_index, new_index)
-#        root_index = append_node(nodes, new_root)
-#        root = nodes[root_index]
-#    if root.is_leaf():
-#        root.insert_in_leaf(entry)
-#    else:
-#        index_to_split = root.insert_in_parent(entry)
-#        new_node = nodes[index_to_split].split_by_key(entry.key())
-#        new_index = len(nodes)
-#        nodes.append(new_node)
-#        root.insert_child(new_index)
-
-#print(f'Root: {root_index}')
-#for i, node in enumerate(nodes): 
-#    print(f'Node[{i}]: {node}')
-
-
-#print(nodes[0])
-#nodes[0].insert_in_leaf(entries[0])
-#print(nodes[0])
-#nodes[0].insert_in_leaf(entries[1])
-#print(nodes[0])
-#nodes[0].insert_in_leaf(entries[2])
-#print(nodes[0])
+exit()
