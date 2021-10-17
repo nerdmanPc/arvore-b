@@ -168,14 +168,19 @@ class Node:
     # int é o filho onde a chave deve estar (subarvore)
     def search_by_key(self, key: int) -> Union[Entry, int, None]: 
         #print('TODO: Node.search_by_key()')
-        for i, entry in enumerate(entries):     # Itera sobre os valores de entradas
+        for i, entry in enumerate(self._entries):     # Itera sobre os valores de entradas
             if entry.key() == key:
                 return entry
-            elif entry.key() > key and not self._is_leaf:      #
+            elif entry.key() > key and not self._is_leaf:      
                 return i
             else:
                 return None
-        #return len(entries)
+        # Trata o caso de 'key' ser maior que todas as chaves
+        if not self._is_leaf:
+            return len(self._children_ids)
+        else:
+            return None
+
 
     def is_full(self) -> bool:
         return len(self._entries) >= self.max_degree-1
