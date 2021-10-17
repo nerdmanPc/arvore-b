@@ -99,7 +99,7 @@ class DataBase:
         nodes.append(node)
         return new_index
 
-        # TODO; PERCORRER A ARVORE PRA ACHAR O NÓ DO REGISTRO
+    # TODO: PERCORRER A ARVORE PRA ACHAR O NÓ DO REGISTRO
     def add_entry(self, key: int, name: str, age: int) -> OpStatus:
         print('TODO: DataBase.add_entry()')
         with open(self.path, 'r+b') as file:
@@ -147,5 +147,9 @@ class DataBase:
         print('TODO: DataBase.print_keys_ordered()')
 
     # TODO: IMPRIME A TAXA DE OCUPAÇÃO
+    # Conferir se ta certo
     def print_occupancy(self):
         print('TODO: DataBase.print_occupancy()')
+        occupancy = Node.occupancy()
+        if occupancy > 0:
+            print("{:.1f}".format(occupancy))
