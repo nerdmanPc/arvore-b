@@ -25,7 +25,7 @@ def insert_entry(key:int, name:str, age:int):
 
 def query_entry(key:int):
 	data_base = DataBase(FILE_PATH)
-	entry = data_base.search_by_key(key)
+	entry = data_base.entry_by_key(key)
 	if entry is not None:
 		print(entry)
 	else:
