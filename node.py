@@ -169,10 +169,10 @@ class Node:
     def search_by_key(self, key: int) -> Union[Entry, int, None]: 
         #print('TODO: Node.search_by_key()')
         for i, entry in enumerate(entries):     # Itera sobre os valores de entradas
-            if entry.key() > key:      #
-                return i
-            elif entry.key() == key:
+            if entry.key() == key:
                 return entry
+            elif entry.key() > key and not self._is_leaf:      #
+                return i
             else:
                 return None
         #return len(entries)
