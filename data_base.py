@@ -1,5 +1,6 @@
 from typing import Optional, Tuple, Union
 from node import Node, Entry
+from enum import Enum
 from struct import Struct
 #from main import GRAUMINIMO, FILE_PATH
 
@@ -161,5 +162,9 @@ class DataBase:
         print('TODO: DataBase.print_keys_ordered()')
 
     # TODO: IMPRIME A TAXA DE OCUPAÇÃO
+    # Conferir se ta certo
     def print_occupancy(self):
         print('TODO: DataBase.print_occupancy()')
+        occupancy = Node.occupancy()
+        if occupancy > 0:
+            print("{:.1f}".format(occupancy))
