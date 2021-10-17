@@ -260,16 +260,19 @@ nodes = [Node.new_empty()]
 root = 0
 
 def append_node(node: Node) -> int:
+    global root, nodes
     new_index = len(nodes)
     nodes.append(node)
     return new_index 
 
 def print_nodes():
+    global root, nodes
     print(f'Root: {root}')
     for i, node in enumerate(nodes): 
         print(f'Node[{i}]: {node}')
 
 def search_node(key: int) -> Union[Node, Entry]:
+    global root, nodes
     next_index = root
     search_result = nodes[next_index].search_by_key(key)
     while not(search_result is None):
@@ -280,25 +283,26 @@ def search_node(key: int) -> Union[Node, Entry]:
             return search_result
     return next_index
 
-def break_node(to_break: int, parent: int):
-    #index_to_break = 1 # Resultado da busca da chave 10
+def break_node(to_break: int, parent: Optional[int]):
+    global root, nodes
     (entry, new_node) = nodes[to_break].split_when_full()
-    new_index = append_node(new_node)
-    if to_break == root: 
-        new_root = Node.new_root(entry, root, new_index)
+    left, right = to_break, append_node(new_node)
+    if parent is None: 
+        new_root = Node.new_root(entry, left, right)
         root = append_node(new_root)
     else:
-        nodes[parent].insert_in_parent(entry, new_index)
+        nodes[parent].insert_in_parent(entry, right)
 
 nodes[root].insert_in_leaf(entries[0])
 nodes[root].insert_in_leaf(entries[1])
 nodes[root].insert_in_leaf(entries[2])
 print_nodes()
 
-(entry, new_node) = nodes[root].split_when_full()
-new_index = append_node(new_node)
-new_root = Node.new_root(entry, root, new_index)
-root = append_node(new_root)
+#(entry, new_node) = nodes[root].split_when_full()
+#new_index = append_node(new_node)
+#new_root = Node.new_root(entry, root, new_index)
+#root = append_node(new_root)
+break_node(0, None)
 print_nodes()
 
 index_to_insert = search_node(entries[3].key()) # Resultado da busca da chave 4
@@ -317,10 +321,11 @@ index_to_insert = search_node(entries[6].key()) # Resultado da busca da chave 5
 nodes[index_to_insert].insert_in_leaf(entries[6])
 print_nodes()
 
-index_to_break = 1 
-(entry, new_node) = nodes[index_to_break].split_when_full()
-new_index = append_node(new_node)
-nodes[root].insert_in_parent(entry, new_index)
+#index_to_break = 1 
+#(entry, new_node) = nodes[index_to_break].split_when_full()
+#new_index = append_node(new_node)
+#nodes[root].insert_in_parent(entry, new_index)
+break_node(1, 2)
 print_nodes()
 
 index_to_insert = search_node(entries[7].key())# Resultado da busca da chave 10
