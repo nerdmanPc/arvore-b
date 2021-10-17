@@ -168,8 +168,14 @@ class Node:
     # int é o filho onde a chave deve estar (subarvore)
     def search_by_key(self, key: int) -> Union[Entry, int, None]: 
         #print('TODO: Node.search_by_key()')
-        if nodes[key]._is_leaf is not True:
-            if nodes[key].
+        for i, entry in enumerate(entries):     # Itera sobre os valores de entradas
+            if entry.key() > key:      #
+                return i
+            elif entry.key() == key:
+                return entry
+            else:
+                return None
+        #return len(entries)
 
     def is_full(self) -> bool:
         return len(self._entries) >= self.max_degree-1
@@ -266,6 +272,8 @@ new_index = append_node(new_node)
 new_root = Node.new_root(entry, root_index, new_index)
 root_index = append_node(new_root)
 print_nodes()
+
+#nodes.search_by_key(3)
 
 #for entry in entries:
 #    # parent, current
