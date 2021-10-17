@@ -1,6 +1,7 @@
-from typing_extensions import ParamSpecArgs
+from typing import Optional, Tuple, Union
 from node import Node, Entry
-from main import GRAUMINIMO, FILE_PATH
+from struct import Struct
+#from main import GRAUMINIMO, FILE_PATH
 
 nodes = [Node.new_empty()]
 
@@ -10,37 +11,38 @@ class OpStatus(Enum):
     ERR_OUT_OF_SPACE = -2
     ERR_KEY_NOT_FOUND = -3
 
-
-# LAYOUT: | N | NÓ[0] | NÓ[1] | ... | NÓ[N-1]
+# LAYOUT: | N | RAIZ | NÓ[0] | NÓ[1] | ... | NÓ[N-1]
 class DataBase:
-    header_format = Struct('>L')
+    header_format = Struct('> L l')  #Header(length: uint32, root: int32)
 
     # CERTO
     def __init__(self, file_path: str):
-        self.path = file_path
+        self._path = file_path
         try:
             with open(file_path, 'xb') as file:
-                self.length = 0
-                file.write(self.header_format.pack(self.length))
+                self._length = 0
+                self._root = -1
+                file.write(self.header_format.pack(self._length, self._root))
         except FileExistsError:
             with open(file_path, "rb") as file:
-                header = file.read(self.header_size())
-                _tuple = self.header_format.unpack(header)
-                self.length = _tuple[0]
+                header = file.read(self._header_size())
+                (length, root) = self.header_format.unpack(header)
+                self._length = length
+                self._root = root
 
     # TODO: Inicializa o índice e coloca o ponteiro na raiz
     def __iter__(self):
         print('TODO: DataBase.__iter__()')
         self.it_index = -1
-        self.it_file = open(self.path, 'rb')
-        self.it_file.seek(self.header_size(), 0)
+        self.it_file = open(self._path, 'rb')
+        self.it_file.seek(self._header_size(), 0)
         return self
 
     # TODO: Itera sobre elementos da árvore
     def __next__(self):
         print('TODO: DataBase.__next__()')
         self.it_index += 1
-        if self.it_index >= self.length:
+        if self.it_index >= self._length:
             self.it_file.close()
             raise StopIteration
         data = self.it_file.read(Entry.size())
@@ -57,60 +59,72 @@ class DataBase:
 
     # CERTO
     @classmethod
-    def header_size(cls) -> int:
+    def _header_size(cls) -> int:
         return cls.header_format.size()
 
-    # CERTO - Note que antes, retornava um ponteiro pra registro, agora retorna um ponteiro pra nó
+    # CERTO
     @classmethod
-    def index_to_ptr(cls, index: int) -> int:
+    def _index_to_ptr(cls, index: int) -> int:
         node_size = Node.size()
-        header_size = cls.header_size()
+        header_size = cls._header_size()
         return header_size + index * node_size
 
     # CERTO
-    def set_length(self, length: int) -> None:
-        with open(self.path, 'r+b') as file:
+    def _set_length(self, length: int) -> None:
+        with open(self._path, 'r+b') as file:
             file.seek(0, 0)
-            self.length = length
-            file.write(self.header_format.pack(length))
+            self._length = length
+            file.write(self.header_format.pack(length, self._root))
 
-    # Conferir se tá certo
-    # TODO: Assim como outras funções, esta tem que mudar a semântica
-    # para operar sobre NÓS em vez de REGISTROS
-    def node_by_index(self, index: int) -> Node:
-        print('TODO: DataBase.node_by_index()')
-        if index >= self.length: print(f'ÍNDICE INVÁLIDO: {index}')
-        with open(self.path, 'rb') as file:
-            file.seek(self.header_size() + index * Node.size(), 0)
+    # CERTO Retorna nó de índice 'index' deserializado
+    def _load_node(self, index: int) -> Node:
+        if index >= self._length: print(f'ÍNDICE INVÁLIDO: {index}')
+        load_position = self._index_to_ptr(index)
+        with open(self._path, 'rb') as file:
+            file.seek(load_position, 0)
             data = file.read(Node.size())
-            entry = Node.from_bytes(data)
-            return entry
+            node = Node.from_bytes(data)
+            return node
 
-    # TODO: Escreve os bytes de um nó no final do arquivo e retona seu índice
-    # Responsável por alocar o nó.
-    def append_node(self, to_append: Node) -> int:
-        #print('TODO: DataBase.append_node()')
-        new_index = self.length
-        with open(self.path, 'r+b') as file:
-            file.seek(self.header_size() + new_index * Node.size(), 0)
-            data = file.read(Node.size())
-            entry = Node.from_bytes(data)
-            return entry
-        nodes.append(node)
+    # CERTO Armazena nó 'node' no arquivo, na posição 'index'
+    def _store_node(self, node: Node, index: int) -> None:
+        if index >= self._length: print(f'ÍNDICE INVÁLIDO: {index}')
+        store_position = self._index_to_ptr(index)
+        with open(self._path, 'rb') as file:
+            file.seek(store_position, 0)
+            data = node.into_bytes()
+            file.write(data)
+            
+    # CERTO Armazena nó 'to_append' no final do arquivo
+    # e retorna o novo índice.
+    def _append_node(self, to_append: Node) -> int:
+        new_index = self._length
+        self._store_node(to_append, new_index)
+        self._set_length(self._length + 1)
         return new_index
 
-        # TODO; PERCORRER A ARVORE PRA ACHAR O NÓ DO REGISTRO
+    # TODO: Quebra nó 'to_break' e insere o registro do meio em 'parent.
+    # Se não houver pai, cria nova raiz e insere.
+    def _break_node(self, to_break: int, parent: Optional[int]) -> None:
+        print('TODO: DataBase.break_node()')
+
+    # TODO: Retorna registro de chave 'key' ou índice do nó onde deve ser inserido
+    def _internal_search(self, key: int) -> Union[Entry, int]:
+        print('TODO: DataBase.internal_search()')
+
+    # TODO; Constrói novo registro, tenta inserir na posição correta 
+    # e retorna o resultado.
     def add_entry(self, key: int, name: str, age: int) -> OpStatus:
         print('TODO: DataBase.add_entry()')
-        with open(self.path, 'r+b') as file:
-            free_pointer = self.index_to_ptr(self.length)
+        with open(self._path, 'r+b') as file:
+            free_pointer = self._index_to_ptr(self._length)
             file.seek(free_pointer)
             entry_bytes = Entry(key, name, age).into_bytes()
             file.write(Node.insert_in_leaf(entry_bytes))
         return OpStatus.OK
 
-    # TODO: ACHA O REGISTRO DA CHAVE QUE PASSAR
-    def search_by_key(self, key: int) -> Optional[Entry]:
+    # TODO: Retorna Registro com chave 'key', se estiver na árvore
+    def entry_by_key(self, key: int) -> Optional[Entry]:
         print('TODO: DataBase.search_by_key()')
         (entry, key, aux) = Node.search_by_key(key)
         if key is not None:
