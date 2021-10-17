@@ -288,13 +288,16 @@ print_nodes()
 index_to_insert = 1 # Resultado da busca da chave 5
 nodes[index_to_insert].insert_in_leaf(entries[6])
 print_nodes()
-index_to_insert = 1 # Resultado da busca da chave 10
+index_to_break = 1 # Resultado da busca da chave 10
 
-(entry, new_node) = nodes[index_to_insert].split_when_full()
+(entry, new_node) = nodes[index_to_break].split_when_full()
 new_index = append_node(new_node)
 nodes[root_index].insert_in_parent(entry, new_index)
 
+print_nodes()
+index_to_insert = 3# Resultado da busca da chave 10
 nodes[index_to_insert].insert_in_leaf(entries[7])
+print_nodes()
 #print_nodes()
 #index_to_insert = 1 # Resultado da busca da chave 666
 
