@@ -16,16 +16,18 @@ class OpStatus(Enum):
 
 # LAYOUT: | N | RAIZ | NÓ[0] | NÓ[1] | ... | NÓ[N-1]
 class DataBase:
-    header_format = Struct('> L l')  #Header(length: uint32, root: int32)
+    header_format = Struct('> L L')  #Header(length: uint32, root: uint32)
 
-    # TODO CRIAR NO VAZIO
+    # CERTO
     def __init__(self, file_path: str):
         self._path = file_path
         try:
             with open(file_path, 'xb') as file:
                 self._length = 0
-                self._root = -1
+                self._root = 0
                 file.write(self.header_format.pack(self._length, self._root))
+            new_root = self._append_node(Node.new_empty)
+            self._set_root(new_root)
         except FileExistsError:
             with open(file_path, "rb") as file:
                 header = file.read(self._header_size())
