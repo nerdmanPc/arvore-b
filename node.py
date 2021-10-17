@@ -65,13 +65,13 @@ class Node:
     # Deve ser chamada logo após 'insert_in_parent()', 
     # no nó retornado por esta. 
     # sendo 'key' a chave recém inserida. Retorna o novo nó.
-    def split_by_key(self, key: int): #-> Node 
-        split_index = self._index_to_split(key)
-        right_entries = self._entries[split_index:]
-        right_children = self._children_ids[split_index:]
-        self._entries = self._entries[:split_index]
-        self._children_ids = self._children_ids[:split_index+1]
-        return Node(self._is_leaf, right_entries, right_children)
+    #def split_by_key(self, key: int): #-> Node 
+    #    split_index = self._index_to_split(key)
+    #    right_entries = self._entries[split_index:]
+    #    right_children = self._children_ids[split_index:]
+    #    self._entries = self._entries[:split_index]
+    #    self._children_ids = self._children_ids[:split_index+1]
+    #    return Node(self._is_leaf, right_entries, right_children)
 
     # Deve ser chamada ao visitar o nó e ele estar cheio.
     # Retorna a tupla (chave_removida, novo_no)
@@ -128,22 +128,21 @@ class Node:
             data[ ptr : ptr + self.child_id_size ] = child_data
         return bytes(data)
 
-    #Insere registro 'to_insert', aloca espaço para um novo ID de filho 
-    # e retorna o ID do filho a ser dividido. 
+    #Insere registro 'to_insert', aloca espaço para o novo ID de filho 
+    # e retorna o ID do filho passado por parâmetro. Chamada após a quebra de um nó filho. 
     #  |Registro|Ponteiro|Registro| -> |Registro|Ponteiro|NovoRegistro|NovoPonteiro|Registro|
     #  |index-1 |     index       | -> |index-1 |        index        |      index+1        |
-    def insert_in_parent(self, to_insert: Entry) -> Optional[int]: 
+    def insert_in_parent(self, to_insert: Entry, right_child: int) -> bool: 
         if self._is_leaf or self.is_full():
-            return None
+            return False
         for index, current in enumerate(self._entries):
             if current.key_greater_than(to_insert.key()):
                 self._entries.insert(index, to_insert) # insere 'to_insert' antes de 'current'
-                self._children_ids.insert(index + 1, -1) # insere índice inválido (-1) no espaço que receberá o próximo nó
-                return self._children_ids[index] # retorna anterior ao inválido, que será dividido
-        self._entries.append(to_insert)  # Se nenhum registro tem a chave maior, insere no final
-        self._children_ids.append(-1) # insere índice inválido (-1) no espaço que receberá o próximo nó (último filho)
-        return self._children_ids[-2] # retorna anterior ao inválido (penúltimo filho), que será dividido
-
+                self._children_ids.insert(index + 1, right_child) 
+                return True
+        self._entries.append(to_insert)  
+        self._children_ids.append(right_child) 
+        return True 
     
     #Insere registr 'to_insert' e retorna se houve sucesso
     def insert_in_leaf(self, to_insert: Entry) -> bool:
@@ -158,11 +157,12 @@ class Node:
 
     # Insere 'child_id' no lugar do primeiro ponteiro inválida (-1).
     # Deve ser chamada depois de insert_in_parent() com o ID  do novo nó.
-    def insert_child(self, child_id: int) -> None:
-        for child in self._children_ids:
-            if child == -1:
-                child = child_id
-                return
+    #def insert_child(self, child_id: int) -> None:
+    #    for child in self._children_ids:
+    #        if child == -1:
+    #            child = child_id
+    #            return
+    #    print(f'Fail to insert child ({child_id})')
             
     # Retorna Entry se a chave está no nó, int se está num nó filho e None se
     # chave não está no nó e este nó é folha. Busca apenas dentro do próprio nó.
@@ -240,7 +240,7 @@ class Node:
         if not self._is_leaf:
             child = self._children_ids[-1] 
             items_str.append('c'+str(child))
-        return '[' + ' | '.join(items_str) + ']'
+        return '[ ' + ' | '.join(items_str) + ' ]'
 
 #TESTE
 
@@ -250,12 +250,11 @@ entries = [
     Entry(3, 'Keanu Reeves', 196),
     Entry(4, 'Pedro Costa', 25),
     Entry(2, 'Abraham Weintraub', 12),
-    Entry(0, 'Roberto Carlos', 128),
-    Entry(5, 'Kid Bengala', 64)
+    Entry(0, 'Roberto Carlos', 128), 
+    Entry(5, 'Kid Bengala', 64), #
+    Entry(10, 'Ben 10', 12),
+    Entry(666, 'Satanás Azelelé', 222)
 ]
-
-nodes = [Node.new_empty()]
-root_index = 0
 
 def append_node(node: Node) -> int:
     new_index = len(nodes)
@@ -267,16 +266,46 @@ def print_nodes():
     for i, node in enumerate(nodes): 
         print(f'Node[{i}]: {node}')
 
+nodes = [Node.new_empty()]
+root_index = 0
+
 nodes[root_index].insert_in_leaf(entries[0])
 nodes[root_index].insert_in_leaf(entries[1])
 nodes[root_index].insert_in_leaf(entries[2])
 print_nodes()
+
 (entry, new_node) = nodes[root_index].split_when_full()
 new_index = append_node(new_node)
 new_root = Node.new_root(entry, root_index, new_index)
 root_index = append_node(new_root)
-print_nodes()
 
+print_nodes()
+index_to_insert = 1 # Resultado da busca da chave 4
+nodes[index_to_insert].insert_in_leaf(entries[3])
+print_nodes()
+index_to_insert = 0 # Resultado da busca da chave 2
+nodes[index_to_insert].insert_in_leaf(entries[4])
+print_nodes()
+index_to_insert = 0 # Resultado da busca da chave 0
+nodes[index_to_insert].insert_in_leaf(entries[5])
+print_nodes()
+index_to_insert = 1 # Resultado da busca da chave 5
+nodes[index_to_insert].insert_in_leaf(entries[6])
+print_nodes()
+index_to_insert = 1 # Resultado da busca da chave 10
+
+(entry, new_node) = nodes[index_to_insert].split_when_full()
+new_index = append_node(new_node)
+nodes[root_index].insert_in_parent(entry, new_index)
+
+nodes[index_to_insert].insert_in_leaf(entries[7])
+#print_nodes()
+#index_to_insert = 1 # Resultado da busca da chave 666
+
+#nodes[root_index].insert_child(new_index)
+
+#nodes[index_to_insert].insert_in_leaf(entries[8])
+#print_nodes()
 #for entry in entries:
 #    # parent, current
 #    if root.is_full():
