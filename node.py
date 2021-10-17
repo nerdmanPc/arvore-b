@@ -245,20 +245,20 @@ class Node:
             items_str.append('c'+str(child))
         return '[ ' + ' | '.join(items_str) + ' ]'
 
-    # GAMBIARRA SUPREMA! Função 'node_map(child_ptr: int) -> int' Mapeia 
+    # GAMBIARRA SUPREMA! Dicionário 'node_map[child_ptr: int]' Mapeia 
     # índices internos na sequência do percurso em largura.
-    def node_str(self, node_map) -> str:
+    def mapped_str(self, node_map: dict) -> str:
         items_str = []
         for index, entry in enumerate(self._entries):
             if index < len(self._children_ids):
                 child = self._children_ids[index] 
-                items_str.append(f'apontador: {node_map(child)}')
+                items_str.append(f'apontador: {node_map[child]}')
             else:
                 items_str.append('apontador: null')
             items_str.append(f'chave: {entry.key()}')
         if not self._is_leaf:
             child = self._children_ids[-1] 
-            items_str.append(f'apontador: {node_map(child)}')
+            items_str.append(f'apontador: {node_map[child]}')
         else:
             items_str.append('apontador: null')
         return ' '.join(items_str)

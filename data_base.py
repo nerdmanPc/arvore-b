@@ -43,14 +43,15 @@ class DataBase:
         return self
 
     # CERTO
-    # Itera sobre elementos da árvore
-    def __next__(self):
+    # Retorna próximo nó do percurso em largura e sua posição original
+    def __next__(self) -> Tuple[Node, int]:
         if self.it_queue.empty():
             raise StopIteration
-        next = self._load_node(self.it_queue.get())
+        next_index = self.it_queue.get()
+        next = self._load_node(next_index)
         for child in next.children_ids():
             self.it_queue.put(child)
-        return next
+        return (next, next_index)
 
     # TODO: IMPRIMIR A ÁRVORE
     def __str__(self):
@@ -175,6 +176,12 @@ class DataBase:
         else:
             return None
 
+    def _make_node_map(self) -> dict:
+        node_map = dict()
+        for print_id, (node, addr) in enumerate(self):
+            node_map[addr] = print_id
+        return node_map
+
     # TODO: IMPRIME A ARVORE
     # Os apontadores e chaves devem ser impressos seguindo a estrutura do nó.
     # Cada apontador deve ser impresso da seguinte maneira:
@@ -189,6 +196,9 @@ class DataBase:
     # apenas as chaves destes registros e os apontares adjacentes a
     # eles devem ser impressos.
     def print_tree(self):
+        # Deve ser passado pra cada nó, como parâmetro de mapped_str()
+        node_map = self._make_node_map()
+
         print('TODO: DataBase.print_tree()')
         print('No: ', no, ': ')
         for child in node:
@@ -203,6 +213,11 @@ class DataBase:
 
     # TODO: IMPRIME A TAXA DE OCUPAÇÃO
     # TA ERRADO
-    def print_occupancy(self):
-        print('TODO: DataBase.print_occupancy()')
-        occupancy = Node.occupancy()
+    def occupancy(self) -> float:
+        _sum, count = 0.0, 0
+        for (node, addr) in self:
+            _sum += node.occupancy()
+            count += 1
+        return _sum / count
+        #print('TODO: DataBase.print_occupancy()')
+        #occupancy = Node.occupancy()
