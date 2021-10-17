@@ -76,7 +76,6 @@ class Node:
     # Deve ser chamada ao visitar o nó e ele estar cheio.
     # Retorna a tupla (chave_removida, novo_no)
     def split_when_full(self): #-> Tuple[Entry, Node]:
-
         split_index = floor((len(self._entries) + 1) / 2)
         right_entries = self._entries[split_index:]
         right_children = self._children_ids[split_index:]
@@ -169,17 +168,14 @@ class Node:
     # int é o filho onde a chave deve estar (subarvore)
     def search_by_key(self, key: int) -> Union[Entry, int, None]: 
         #print('TODO: Node.search_by_key()')
-        for child in self._children_ids:
-            if self._is_leaf is not True:
-                if child == key:
-                    #print('Retorna a entrada do nó')
-                    return child.from_bytes(key)
-                else:
-                    # TODO pegar o valor do ponteiro imediatamente anterior ao próximo nó
-                    #print('Retorna o meio dos registros')
-                    pass
+        for i, entry in enumerate(entries):     # Itera sobre os valores de entradas
+            if entry.key() > key:      #
+                return i
+            elif entry.key() == key:
+                return entry
             else:
                 return None
+        #return len(entries)
 
     def is_full(self) -> bool:
         return len(self._entries) >= self.max_degree-1
