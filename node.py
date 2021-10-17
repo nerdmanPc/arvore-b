@@ -27,8 +27,9 @@ class Entry:
     def key_greater_than(self, key: int) -> bool:
         return self._key > key
 
+    # Só para consulta
     def __str__(self):
-        return '{} {} {}'.format(self._key, self._name, self._age)
+        return 'chave: {}\n{}\n{}'.format(self._key, self._name, self._age)
 
     @classmethod 
     def from_bytes(cls, data: bytes): #-> Entry
@@ -243,6 +244,24 @@ class Node:
             child = self._children_ids[-1] 
             items_str.append('c'+str(child))
         return '[ ' + ' | '.join(items_str) + ' ]'
+
+    # GAMBIARRA SUPREMA! Função 'node_map(child_ptr: int) -> int' Mapeia 
+    # índices internos na sequência do percurso em largura.
+    def node_str(self, node_map) -> str:
+        items_str = []
+        for index, entry in enumerate(self._entries):
+            if index < len(self._children_ids):
+                child = self._children_ids[index] 
+                items_str.append(f'apontador: {node_map(child)}')
+            else:
+                items_str.append('apontador: null')
+            items_str.append(f'chave: {entry.key()}')
+        if not self._is_leaf:
+            child = self._children_ids[-1] 
+            items_str.append(f'apontador: {node_map(child)}')
+        else:
+            items_str.append('apontador: null')
+        return ' '.join(items_str)
 
 #TESTE
 

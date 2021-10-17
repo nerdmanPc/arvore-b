@@ -64,6 +64,9 @@ class DataBase:
     def _header_size(cls) -> int:
         return cls.header_format.size()
 
+    def _empty(self) -> bool:
+        return self._length == 0
+
     # CERTO
     @classmethod
     def _index_to_ptr(cls, index: int) -> int:
