@@ -180,6 +180,8 @@ class Node:
         else:                 # 'key'não está nesta subárvore
             return None
 
+    def children_ids(self) -> List[int]:
+        return self._children_ids
 
     def is_full(self) -> bool:
         return len(self._entries) >= self.max_degree-1

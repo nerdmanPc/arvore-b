@@ -2,9 +2,11 @@ from typing import Optional, Tuple, Union
 from node import Node, Entry
 from enum import Enum
 from struct import Struct
+from queue import Queue
 #from main import GRAUMINIMO, FILE_PATH
 
-nodes = [Node.new_empty()]
+#nodes = [Node.new_empty()]
+
 
 class OpStatus(Enum):
     OK = 0
@@ -16,7 +18,7 @@ class OpStatus(Enum):
 class DataBase:
     header_format = Struct('> L l')  #Header(length: uint32, root: int32)
 
-    # CERTO
+    # TODO CRIAR NO VAZIO
     def __init__(self, file_path: str):
         self._path = file_path
         try:
@@ -31,31 +33,28 @@ class DataBase:
                 self._length = length
                 self._root = root
 
-    # TODO: Inicializa o índice e coloca o ponteiro na raiz
+    # CERTO
+    # Inicializa o índice e coloca o ponteiro na raiz
     def __iter__(self):
-        print('TODO: DataBase.__iter__()')
-        self.it_index = -1
-        self.it_file = open(self._path, 'rb')
-        self.it_file.seek(self._header_size(), 0)
+        self.it_queue = Queue()
+        self.it_queue.put(self._root)
         return self
 
-    # TODO: Itera sobre elementos da árvore
+    # CERTO
+    # Itera sobre elementos da árvore
     def __next__(self):
-        print('TODO: DataBase.__next__()')
-        self.it_index += 1
-        if self.it_index >= self._length:
-            self.it_file.close()
+        if self.it_queue.empty():
             raise StopIteration
-        data = self.it_file.read(Entry.size())
-        entry = Entry.from_bytes(data)
-        return entry
+        next = self._load_node(self.it_queue.get())
+        for child in next.children_ids():
+            self.it_queue.put(child)
+        return next
 
     # TODO: IMPRIMIR A ÁRVORE
     def __str__(self):
-        print('TODO: DataBase.__str__()')
         result = []
-        for entry in self:
-            result.append(str(entry))
+        for i, node in enumerate(self):
+            result.append(str(node))
         return '\n'.join(result)
 
     # CERTO
@@ -76,6 +75,13 @@ class DataBase:
             file.seek(0, 0)
             self._length = length
             file.write(self.header_format.pack(length, self._root))
+
+    # CERTO
+    def _set_root(self, root: int) -> None:
+        with open(self._path, 'r+b') as file:
+            file.seek(0, 0)
+            self._root = root
+            file.write(self.header_format.pack(self._length, root))
 
     # CERTO Retorna nó de índice 'index' deserializado
     def _load_node(self, index: int) -> Node:
@@ -104,35 +110,65 @@ class DataBase:
         self._set_length(self._length + 1)
         return new_index
 
-    # TODO: Quebra nó 'to_break' e insere o registro do meio em 'parent.
+    # CERTO
     # Se não houver pai, cria nova raiz e insere.
-    def _break_node(self, to_break: int, parent: Optional[int]) -> None:
-        print('TODO: DataBase.break_node()')
+    def _break_node(self, to_break: int, parent_index: Optional[int]) -> None:
+        left_node = self._load_node(to_break)
+        (entry, new_node) = left_node.split_when_full()
+        left, right = to_break, self._append_node(new_node)
+        if parent_index is None:
+            new_root = Node.new_root(entry, left, right)
+            self._set_root(self._append_node(new_root))
+        else:
+            parent_node = self._load_node(parent_index)
+            parent_node.insert_in_parent(entry, right)
+            self._store_node(parent_node, parent_index)
+        self._store_node(left_node, left)
 
-    # TODO: Retorna registro de chave 'key' ou índice do nó onde deve ser inserido
+    # CERTO
+    def _break_if_full(self, index: int, parent_index: int) -> None:
+        node_to_break = self._load_node(index)
+        if node_to_break.is_full():
+            self._break_node(index, parent_index)
+
+    # CERTO
     def _internal_search(self, key: int) -> Union[Entry, int]:
-        print('TODO: DataBase.internal_search()')
+        next_index = self._root
+        self._break_if_full(next_index, None)
+        search_result = self._load_node(next_index).search_by_key(key)
+        while not (search_result is None):
+            if isinstance(search_result, int):
+                parent_index = next_index
+                next_index = search_result
+                self._break_if_full(next_index, parent_index)
+                search_result = self._load_node(next_index).search_by_key(key)
+            elif isinstance(search_result, Entry):
+                return search_result
+        return next_index
 
-    # TODO; Constrói novo registro, tenta inserir na posição correta 
+    # CERTO
+    # Constrói novo registro, tenta inserir na posição correta
     # e retorna o resultado.
     def add_entry(self, key: int, name: str, age: int) -> OpStatus:
-        print('TODO: DataBase.add_entry()')
-        with open(self._path, 'r+b') as file:
-            free_pointer = self._index_to_ptr(self._length)
-            file.seek(free_pointer)
-            entry_bytes = Entry(key, name, age).into_bytes()
-            file.write(Node.insert_in_leaf(entry_bytes))
-        return OpStatus.OK
-
-    # TODO: Retorna Registro com chave 'key', se estiver na árvore
-    def entry_by_key(self, key: int) -> Optional[Entry]:
-        print('TODO: DataBase.search_by_key()')
-        (entry, key, aux) = Node.search_by_key(key)
-        if key is not None:
-            # busca
-            return
+        search_result = self._internal_search(key)
+        if isinstance(search_result, Entry):
+            return OpStatus.ERR_KEY_EXISTS
         else:
-            return
+            entry_to_insert = Entry(key, name, age)
+            node_to_insert = self._load_node(search_result)
+            node_to_insert.insert_in_leaf(entry_to_insert)
+            self._store_node(node_to_insert)
+            return OpStatus.OK
+
+    # CERTO
+    # Retorna Registro com chave 'key', se estiver na árvore
+    def entry_by_key(self, key: int) -> Optional[Entry]:
+        search_result = self._internal_search(key)
+        if isinstance(search_result, Entry):
+            # busca
+            return search_result
+        else:
+            return None
 
     # TODO: IMPRIME A ARVORE
     # Os apontadores e chaves devem ser impressos seguindo a estrutura do nó.
@@ -147,9 +183,8 @@ class DataBase:
     # Se em um nó estiverem armazenados k registros,
     # apenas as chaves destes registros e os apontares adjacentes a
     # eles devem ser impressos.
-    def print_tree(self, node: int, depth: int):
+    def print_tree(self):
         print('TODO: DataBase.print_tree()')
-        depth = 0
         print('No: ', no, ': ')
         for child in node:
             print(apontar / chave, ': ', valor)
@@ -162,9 +197,7 @@ class DataBase:
         print('TODO: DataBase.print_keys_ordered()')
 
     # TODO: IMPRIME A TAXA DE OCUPAÇÃO
-    # Conferir se ta certo
+    # TA ERRADO
     def print_occupancy(self):
         print('TODO: DataBase.print_occupancy()')
         occupancy = Node.occupancy()
-        if occupancy > 0:
-            print("{:.1f}".format(occupancy))
