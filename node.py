@@ -257,6 +257,9 @@ entries = [
     Entry(666, 'Satanás Azelelé', 222)
 ]
 
+nodes = [Node.new_empty()]
+root_index = 0
+
 def append_node(node: Node) -> int:
     new_index = len(nodes)
     nodes.append(node)
@@ -267,8 +270,15 @@ def print_nodes():
     for i, node in enumerate(nodes): 
         print(f'Node[{i}]: {node}')
 
-nodes = [Node.new_empty()]
-root_index = 0
+def search_node(key: int) -> Union[Node, Entry]:
+    node_index = root_index
+    search_result = nodes[node_index].search_by_key(key)
+    while not(search_result is None):
+        if isinstance(search_result, int):
+            node_index = search_result
+        elif isinstance(search_result, Entry):
+            return search_result
+    return node_index
 
 nodes[root_index].insert_in_leaf(entries[0])
 nodes[root_index].insert_in_leaf(entries[1])
