@@ -1,3 +1,11 @@
+# Primeiro Trabalho Prático de EDAII (UFBA)
+# Desenvolvido em dupla:
+# Laila Pereira Mota Santos e Pedro Antonhyonih Silva Costa
+# Versão Python: 3.8.2
+#
+#	OBSERVAÇÃO IMPORTANTE:
+# A CONSTANTE GRAUMINIMO ESTÁ NO ARQUIVO node.py
+
 import os
 from struct import Struct
 from typing import Optional, Tuple
@@ -8,11 +16,6 @@ import sys
 
 FILE_PATH = "tree.bin"
 #GRAUMINIMO = 2 #Dá problema de import circular. Movido para 'node.py'
-
-#class OpStatus(Enum):
-#	OK = 0
-#	ERR_KEY_EXISTS = -1
-#	ERR_KEY_NOT_FOUND = -2
 
 def insert_entry(key:int, name:str, age:int):
 	data_base = DataBase(FILE_PATH)
@@ -47,12 +50,12 @@ def print_occupancy():
 		print('árvore vazia')
 		return
 	occupancy = data_base.occupancy()
-	print('{:.1f}'.format(occupancy))
+	print('taxa de ocupacao: {:.1f}'.format(occupancy))
 
 def exit_shell():
 	sys.exit()
 
-os.remove(FILE_PATH)
+#os.remove(FILE_PATH)
 
 #Loop principal que processa os comandos.
 entry = input()
