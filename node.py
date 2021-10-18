@@ -1,3 +1,4 @@
+from os import name
 from struct import Struct
 from typing import Optional, Tuple, Union, List
 from enum import Enum
@@ -38,6 +39,7 @@ class Entry:
         return Entry(key, name, age)
 
     def into_bytes(self) -> bytes:
+        name = 
         return self.format.pack(self._key, bytes(self._name, 'utf-8'), self._age)
 
 class Node:

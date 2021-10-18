@@ -200,7 +200,7 @@ class DataBase:
         node_map = self._make_node_map()
 
         for print_id, (node, address) in enumerate(self):
-            node_str = node.mapped_str(node_map)
+            node_str = node.mapped_str(node_map) 
 
         print('TODO: DataBase.print_tree()')
         print('No: ', no, ': ')
