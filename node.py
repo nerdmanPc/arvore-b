@@ -272,6 +272,7 @@ class Node:
         else:
             items_str.append('apontador: null')
         return ' '.join(items_str)
+'''
 #TESTE
 
 entries = [
@@ -286,7 +287,6 @@ entries = [
     Entry(666, 'Satanás Azelelé', 222)
 ]
 
-'''
 #for entry in entries:
 #    _bytes = entry.into_bytes()
 #    data = Entry.from_bytes(_bytes)

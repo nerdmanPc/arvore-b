@@ -229,7 +229,10 @@ class DataBase:
         return _sum / count
 
 '''
-os.remove("database.bin")
+try:
+    os.remove("database.bin")
+except:
+    pass
 
 database = DataBase("database.bin")
 
@@ -237,7 +240,18 @@ database.add_entry(10, 'joao', 10)
 database.add_entry(15, 'maria', 15)
 database.add_entry(20, 'pedro', 20)
 database.add_entry(30, 'laila', 30)
-database.print_tree()
-database.print_keys_ordered()
+
+joao = database.entry_by_key(10)
+maria = database.entry_by_key(15)
+pedro = database.entry_by_key(20)
+laila = database.entry_by_key(30)
+
+print(joao)
+print(maria)
+print(pedro)
+print(laila)
+
+#database.print_tree()
+#database.print_keys_ordered()
 exit()
 '''
