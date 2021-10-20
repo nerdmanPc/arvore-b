@@ -3,7 +3,7 @@ from struct import Struct
 from typing import Optional, Tuple, Union, List
 from enum import Enum
 from math import floor
-#from main import GRAUMINIMO
+#from main import GRAUMINIMO-
 
 GRAUMINIMO = 2
 
@@ -35,12 +35,11 @@ class Entry:
     @classmethod 
     def from_bytes(cls, data: bytes): #-> Entry
         (key, name, age) = cls.format.unpack(data)
-        name = str(name, 'utf-8')
+        name = name.decode('utf-8')
         return Entry(key, name, age)
 
     def into_bytes(self) -> bytes:
-        name = 
-        return self.format.pack(self._key, bytes(self._name, 'utf-8'), self._age)
+        return self.format.pack(self._key, self._name.encode('utf-8'), self._age)
 
 class Node:
 
@@ -56,6 +55,8 @@ class Node:
         self._is_leaf = is_leaf
         self._entries = entries
         self._children_ids = children_ids
+        if len(children_ids) > 0 and isinstance(children_ids[0], Tuple):
+            raise Exception('init: ' + str(children_ids))
 
     @classmethod
     def new_empty(cls):
@@ -95,7 +96,7 @@ class Node:
             ptr = cls._child_offset(index)
             child_data = data[ ptr : ptr + cls.child_id_size ]
             child = cls.child_id_format.unpack(child_data)
-            children.append(child)
+            children.append(child[0])
 
         return Node(is_leaf, entries, children)
 
@@ -123,11 +124,16 @@ class Node:
         split_index = floor((len(self._entries) + 1) / 2)
         right_entries = self._entries[split_index:]
         right_children = self._children_ids[split_index:]
+        #for e in right_entries:
+        #    print('right_entries: ', e)
         # Os ponteiros à esquerda e direita de 'middle_entry' podem ser obtidos por quem chama
         middle_entry = self._entries[split_index-1]
 
         self._entries = self._entries[:split_index-1]
+        #for e in self._entries:
+        #    print('self_entries: ', e)
         self._children_ids = self._children_ids[:split_index]
+        #print('split_self_childrenid: ', self._children_ids)
         new_node = Node(self._is_leaf, right_entries, right_children)
         return (middle_entry, new_node)
     
@@ -141,9 +147,11 @@ class Node:
         for index, current in enumerate(self._entries):
             if current.key_greater_than(to_insert.key()):
                 self._entries.insert(index, to_insert) # insere 'to_insert' antes de 'current'
+                #print('insert_right_child_it: ', right_child)
                 self._children_ids.insert(index + 1, right_child) 
                 return True
-        self._entries.append(to_insert)  
+        self._entries.append(to_insert)
+        #print('insert_right_child: ', right_child)
         self._children_ids.append(right_child) 
         return True 
     
@@ -203,10 +211,10 @@ class Node:
 
     # Retorna ínice do primeiro registro com chave maior que 'key'
     def _index_to_split(self, key: int) -> int:
-        for i, entry in enumerate(entries):
+        for i, entry in enumerate(self._entries):
             if entry.key() > key:
                 return i
-        return len(entries)
+        return len(self._entries)
 
     @classmethod
     def _entry_offset(cls, index: int) -> Optional[Entry]: #PRIVADO
@@ -264,7 +272,7 @@ class Node:
         else:
             items_str.append('apontador: null')
         return ' '.join(items_str)
-
+'''
 #TESTE
 
 entries = [
@@ -355,4 +363,6 @@ index_to_insert = search_node(entries[7].key())# Resultado da busca da chave 10
 nodes[index_to_insert].insert_in_leaf(entries[7])
 print_nodes()
 
+
 exit()
+'''
