@@ -272,7 +272,6 @@ class Node:
         else:
             items_str.append('apontador: null')
         return ' '.join(items_str)
-'''
 #TESTE
 
 entries = [
@@ -286,6 +285,37 @@ entries = [
     Entry(10, 'Ben 10', 12),
     Entry(666, 'Satanás Azelelé', 222)
 ]
+
+'''
+#for entry in entries:
+#    _bytes = entry.into_bytes()
+#    data = Entry.from_bytes(_bytes)
+#    print(data)
+#
+
+node = Node.new_empty()
+node.insert_in_leaf(entries[0])
+node.insert_in_leaf(entries[1])
+node.insert_in_leaf(entries[2])
+
+node_map = dict()
+node_map[0] = 0
+node_map[1] = 1
+node_map[2] = 2
+
+#print(node.mapped_str(node_map))
+
+node_bytes = node.into_bytes()
+with open('roundtrip.bin', 'w+b') as file:
+    file.seek(0, 0)
+    file.write(node_bytes)
+    file.seek(0, 0)
+    node_bytes = file.read(Node.size())
+node_data = Node.from_bytes(node_bytes)
+
+for entry in node_data:
+    print(entry)
+
 
 nodes = [Node.new_empty()]
 root = 0
