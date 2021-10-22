@@ -37,7 +37,7 @@ class DataBase:
                 self._root = root
 
     # CERTO
-    # Inicializa o índice e coloca o ponteiro na raiz
+    # Inicializa o indice e coloca o ponteiro na raiz
     def __iter__(self):
         self.it_queue = Queue()
         #print('root', self._root)
@@ -45,7 +45,7 @@ class DataBase:
         return self
 
     # CERTO
-    # Retorna próximo nó do percurso em largura e sua posição original
+    # Retorna proximo no do percurso em largura e sua posicao original
     def __next__(self) -> Tuple[Node, int]:
         if self.it_queue.empty():
             raise StopIteration
@@ -57,7 +57,6 @@ class DataBase:
             self.it_queue.put(child)
         return (next_node, next_index)
 
-    # TODO: IMPRIMIR A ÁRVORE
     def __str__(self):
         result = []
         for i, node in enumerate(self):
@@ -93,9 +92,9 @@ class DataBase:
             self._root = root
             file.write(self.header_format.pack(self._length, root))
 
-    # CERTO Retorna nó de índice 'index' deserializado
+    # CERTO Retorna no de indice 'index' deserializado
     def _load_node(self, index: int) -> Node:
-        if index >= self._length: print(f'ÍNDICE INVÁLIDO: {index}')
+        if index >= self._length: print(f'INDICE INVALIDO: {index}')
         load_position = self._index_to_ptr(index)
         with open(self._path, 'rb') as file:
             file.seek(load_position, 0)
@@ -103,17 +102,17 @@ class DataBase:
             node = Node.from_bytes(data)
             return node
 
-    # CERTO Armazena nó 'node' no arquivo, na posição 'index'
+    # CERTO Armazena no 'node' no arquivo, na posicao 'index'
     def _store_node(self, node: Node, index: int) -> None:
-        if index > self._length: print(f'ÍNDICE INVÁLIDO: {index}')
+        if index > self._length: print(f'INDICE INVALIDO: {index}')
         store_position = self._index_to_ptr(index)
         with open(self._path, 'r+b') as file:
             file.seek(store_position, 0)
             data = node.into_bytes()
             file.write(data)
             
-    # CERTO Armazena nó 'to_append' no final do arquivo
-    # e retorna o novo índice.
+    # CERTO Armazena no 'to_append' no final do arquivo
+    # e retorna o novo indice.
     def _append_node(self, to_append: Node) -> int:
         new_index = self._length
         self._store_node(to_append, new_index)
@@ -121,7 +120,7 @@ class DataBase:
         return new_index
 
     # CERTO
-    # Se não houver pai, cria nova raiz e insere.
+    # Se nao houver pai, cria nova raiz e insere.
     def _break_node(self, to_break: int, parent_index: Optional[int]) -> None:
         left_node = self._load_node(to_break)
         (entry, new_node) = left_node.split_when_full()
@@ -161,7 +160,7 @@ class DataBase:
         return next_index
 
     # CERTO
-    # Constrói novo registro, tenta inserir na posição correta
+    # Constroi novo registro, tenta inserir na posicao correta
     # e retorna o resultado.
     def add_entry(self, key: int, name: str, age: int) -> OpStatus:
         search_result = self._internal_search(key)
@@ -175,7 +174,7 @@ class DataBase:
             return OpStatus.OK
 
     # CERTO
-    # Retorna Registro com chave 'key', se estiver na árvore
+    # Retorna Registro com chave 'key', se estiver na arvore
     def entry_by_key(self, key: int) -> Optional[Entry]:
         search_result = self._internal_search(key)
         if isinstance(search_result, Entry):
@@ -192,15 +191,13 @@ class DataBase:
 
     # TODO: IMPRIME A ARVORE
     def print_tree(self):
-        # Deve ser passado pra cada nó, como parâmetro de mapped_str()
+        # Deve ser passado pra cada no, como parametro de mapped_str()
         node_map = self._make_node_map()
         for print_id, (node, address) in enumerate(self):
             node_str = node.mapped_str(node_map)
-            print(f'No: {print_id + 1}: {node_str}')
+            print(f'no: {print_id + 1}: {node_str}')
 
-    # TODO: IMPRIME A ÁRVORE ORDENADA
     def _print_keys_ordered(self, index: int):
-        #print('TODO: DataBase._print_keys_ordered()')
         node = self._load_node(index)
         if node.is_leaf():
             for entry in node:
@@ -214,13 +211,13 @@ class DataBase:
 
     def print_keys_ordered(self):
         if self.empty():
-            print('árvore vazia')
+            print('arvore vazia')
             return
         self._print_keys_ordered(self._root)
 
 
     # CERTO
-    # IMPRIME A TAXA DE OCUPAÇÃO
+    # IMPRIME A TAXA DE OCUPACAO
     def occupancy(self) -> float:
         _sum, count = 0.0, 0
         for (node, addr) in self:

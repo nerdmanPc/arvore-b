@@ -1,10 +1,10 @@
-# Primeiro Trabalho Prático de EDAII (UFBA)
+# Primeiro Trabalho Pratico de EDAII (UFBA)
 # Desenvolvido em dupla:
 # Laila Pereira Mota Santos e Pedro Antonhyonih Silva Costa
-# Versão Python: 3.8.10
+# Versão Python 3.8.10
 #
-#	OBSERVAÇÃO IMPORTANTE:
-# A CONSTANTE GRAUMINIMO ESTÁ NO ARQUIVO node.py
+#	OBSERVACAO IMPORTANTE:
+# A CONSTANTE GRAUMINIMO ESTA NO ARQUIVO node.py
 
 import os
 from struct import Struct
@@ -15,7 +15,8 @@ from data_base import DataBase, OpStatus
 import sys
 
 FILE_PATH = "tree.bin"
-#GRAUMINIMO = 2 #Dá problema de import circular. Movido para 'node.py'
+#GRAUMINIMO = 2 #Da problema de import circular
+# Movido para node.py
 
 def insert_entry(key:int, name:str, age:int):
 	data_base = DataBase(FILE_PATH)
@@ -47,7 +48,7 @@ def print_sequence():
 def print_occupancy():
 	data_base = DataBase(FILE_PATH)
 	if data_base.empty():
-		print('árvore vazia')
+		print('arvore vazia')
 		return
 	occupancy = data_base.occupancy()
 	print('taxa de ocupacao: {:.1f}'.format(occupancy))
@@ -57,7 +58,7 @@ def exit_shell():
 
 #os.remove(FILE_PATH)
 
-#Loop principal que processa os comandos.
+#Loop principal que processa os comandos
 entry = input()
 while entry != 'e':
     if(entry == 'i'):
@@ -76,4 +77,4 @@ while entry != 'e':
         print_occupancy()
     entry = input()
 exit_shell()
-#Fim do loop principal.
+#Fim do loop principal

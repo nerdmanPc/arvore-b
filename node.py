@@ -3,7 +3,6 @@ from struct import Struct
 from typing import Optional, Tuple, Union, List
 from enum import Enum
 from math import floor
-#from main import GRAUMINIMO-
 
 GRAUMINIMO = 2
 
@@ -66,9 +65,9 @@ class Node:
     def new_root(cls, entry: Entry, left, right):
         return cls(False, [entry], [left, right])
 
-    # Deve ser chamada logo após 'insert_in_parent()', 
-    # no nó retornado por esta. 
-    # sendo 'key' a chave recém inserida. Retorna o novo nó.
+    # Deve ser chamada logo apos 'insert_in_parent()',
+    # no no retornado por esta.
+    # sendo 'key' a chave recem inserida. Retorna o novo no.
     #def split_by_key(self, key: int): #-> Node 
     #    split_index = self._index_to_split(key)
     #    right_entries = self._entries[split_index:]
@@ -118,7 +117,7 @@ class Node:
             data[ ptr : ptr + self.child_id_size ] = child_data
         return bytes(data)
 
-    # Deve ser chamada ao visitar o nó e ele estar cheio.
+    # Deve ser chamada ao visitar o no e ele estar cheio.
     # Retorna a tupla (chave_removida, novo_no)
     def split_when_full(self): #-> Tuple[Entry, Node]:
         split_index = floor((len(self._entries) + 1) / 2)
@@ -126,7 +125,7 @@ class Node:
         right_children = self._children_ids[split_index:]
         #for e in right_entries:
         #    print('right_entries: ', e)
-        # Os ponteiros à esquerda e direita de 'middle_entry' podem ser obtidos por quem chama
+        # Os ponteiros a esquerda e direita de 'middle_entry' podem ser obtidos por quem chama
         middle_entry = self._entries[split_index-1]
 
         self._entries = self._entries[:split_index-1]
@@ -137,8 +136,8 @@ class Node:
         new_node = Node(self._is_leaf, right_entries, right_children)
         return (middle_entry, new_node)
     
-    #Insere registro 'to_insert', aloca espaço para o novo ID de filho 
-    # e retorna o ID do filho passado por parâmetro. Chamada após a quebra de um nó filho. 
+    #Insere registro 'to_insert', aloca espaco para o novo ID de filho
+    # e retorna o ID do filho passado por parametro. Chamada apos a quebra de um no filho.
     #  |Registro|Ponteiro|Registro| -> |Registro|Ponteiro|NovoRegistro|NovoPonteiro|Registro|
     #  |index-1 |     index       | -> |index-1 |        index        |      index+1        |
     def insert_in_parent(self, to_insert: Entry, right_child: int) -> bool: 
@@ -166,8 +165,8 @@ class Node:
         self._entries.append(to_insert) # Se nenhum registro tem a chave maior, insere no final
         return True
 
-    # Insere 'child_id' no lugar do primeiro ponteiro inválida (-1).
-    # Deve ser chamada depois de insert_in_parent() com o ID  do novo nó.
+    # Insere 'child_id' no lugar do primeiro ponteiro invalida (-1).
+    # Deve ser chamada depois de insert_in_parent() com o ID  do novo no.
     #def insert_child(self, child_id: int) -> None:
     #    for child in self._children_ids:
     #        if child == -1:
@@ -175,20 +174,20 @@ class Node:
     #            return
     #    print(f'Fail to insert child ({child_id})')
             
-    # Retorna Entry se a chave está no nó, int se está num nó filho e None se
-    # chave não está no nó e este nó é folha. Busca apenas dentro do próprio nó.
-    # int é o ID do filho onde a chave deve estar (subarvore)
+    # Retorna Entry se a chave esta no no, int se esta num no filho e None se
+    # chave nao esta no no e este no eh folha. Busca apenas dentro do proprio no.
+    # int eh o ID do filho onde a chave deve estar (subarvore)
     def search_by_key(self, key: int) -> Union[Entry, int, None]: 
         #print('TODO: Node.search_by_key()')
         #print(f'key = {key} self._is_leaf = {self._is_leaf}')
         for i, entry in enumerate(self._entries):     # Itera sobre os valores de entradas
-            if entry.key() == key:  # 'key' está na posição atual
+            if entry.key() == key:  # 'key' esta na posição atual
                 return entry
-            elif entry.key() > key and not self._is_leaf:   # 'key' está no nó à esquerde
+            elif entry.key() > key and not self._is_leaf:   # 'key' esta no no a esquerda
                 return self._children_ids[i]
-        if not self._is_leaf: # 'key' está no último filho à direita
+        if not self._is_leaf: # 'key' esta no ultimo filho a direita
             return self._children_ids[len(self._entries)]
-        else:                 # 'key'não está nesta subárvore
+        else:                 # 'key'nao esta nesta subarvore
             return None
 
     def children_ids(self) -> List[int]:
@@ -209,7 +208,7 @@ class Node:
     def occupancy(self) -> float:
         return len(self._entries) / (self.max_degree-1)
 
-    # Retorna ínice do primeiro registro com chave maior que 'key'
+    # Retorna indice do primeiro registro com chave maior que 'key'
     def _index_to_split(self, key: int) -> int:
         for i, entry in enumerate(self._entries):
             if entry.key() > key:
@@ -218,14 +217,14 @@ class Node:
 
     @classmethod
     def _entry_offset(cls, index: int) -> Optional[Entry]: #PRIVADO
-        start = cls.header_size + cls.child_id_size #Pula o cabeçalho e o primeiro filho
-        step = cls.entry_size + cls.child_id_size #Avança para o próximo registro pulando o filho entre eles
+        start = cls.header_size + cls.child_id_size #Pula o cabecalho e o primeiro filho
+        step = cls.entry_size + cls.child_id_size #Avanca para o proximo registro pulando o filho entre eles
         return start + index*step
 
     @classmethod
     def _child_offset(cls, index: int) -> Optional[int]: #PRIVADO
-        start = cls.header_size #Pula o cabeçalho
-        step = cls.child_id_size + cls.entry_size #Avança para o próximo filho pulando o registro entre eles
+        start = cls.header_size #Pula o cabecalho
+        step = cls.child_id_size + cls.entry_size #Avanca para o proximo filho pulando o registro entre eles
         return start + step * index 
 
     def __iter__(self):
@@ -255,8 +254,8 @@ class Node:
             items_str.append('c'+str(child))
         return '[ ' + ' | '.join(items_str) + ' ]'
 
-    # GAMBIARRA SUPREMA! Dicionário 'node_map[child_ptr: int]' Mapeia 
-    # índices internos na sequência do percurso em largura.
+    # GAMBIARRA SUPREMA! Dicionario 'node_map[child_ptr: int]' Mapeia
+    # indices internos na sequencia do percurso em largura.
     def mapped_str(self, node_map: dict) -> str:
         items_str = []
         for index, entry in enumerate(self._entries):
