@@ -15,7 +15,7 @@ class OpStatus(Enum):
     ERR_OUT_OF_SPACE = -2
     ERR_KEY_NOT_FOUND = -3
 
-# LAYOUT: | N | RAIZ | NÓ[0] | NÓ[1] | ... | NÓ[N-1]
+# LAYOUT: | N | RAIZ | NO[0] | NO[1] | ... | NO[N-1]
 class DataBase:
     header_format = Struct('> L L')  #Header(length: uint32, root: uint32)
 

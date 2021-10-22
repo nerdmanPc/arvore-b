@@ -15,8 +15,7 @@ from data_base import DataBase, OpStatus
 import sys
 
 FILE_PATH = "tree.bin"
-#GRAUMINIMO = 2 #Da problema de import circular
-# Movido para node.py
+#GRAUMINIMO = 2 # Movido para node.py
 
 def insert_entry(key:int, name:str, age:int):
 	data_base = DataBase(FILE_PATH)
